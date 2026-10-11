@@ -1,0 +1,140 @@
+{
+  "center": {
+    "name": "skwelahan ni kleeser",
+    "tagline": "Empowering Minds, Inspiring Lifelong Academic Confidence",
+    "tutorName": "Sir Kleeser",
+    "tutorTitle": "Lead Academic Coach & Learning Specialist",
+    "email": "sample@email.com",
+    "phone": "",
+    "address": "Sambag jaro",
+    "passcode": "1234",
+    "activeTerm": " 2026 Term"
+  },
+  "students": [
+    {
+      "id": "stu-101",
+      "pinCode": "9421",
+      "accessCode": "9421",
+      "fullName": "Lucas Vance",
+      "preferredName": "Lucas",
+      "grade": "5th Grade",
+      "subjects": [
+        "Mathematics",
+        "Science & Discovery",
+        "Reading Comprehension"
+      ],
+      "parentName": "Eleanor Vance",
+      "parentPhone": "+1 (555) 349-8812",
+      "parentEmail": "eleanor.vance@example.com",
+      "enrolledDate": "2026-01-15",
+      "status": "Active",
+      "avatar": "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80",
+      "learningGoals": "Master complex fraction arithmetic, strengthen multi-step word problem synthesis, and refine reading inference skills.",
+      "sessions": [
+        {
+          "id": "ses-101-1",
+          "date": "2026-10-09",
+          "subject": "Mathematics",
+          "topic": "Multiplying & Dividing Fractions with Real-World Word Problems",
+          "duration": "60 mins",
+          "attendance": "Present",
+          "rating": 5,
+          "badge": "Star Problem Solver",
+          "tutorNotes": "Outstanding breakthrough session! Lucas solved all 7 multi-step word problems completely without coaching. He even caught an edge case in problem #4 on his own.",
+          "homework": "Completed - 100% Score",
+          "nextSteps": "Begin mixed numbers and decimal conversion next Tuesday."
+        },
+        {
+          "id": "ses-101-2",
+          "date": "2026-10-06",
+          "subject": "Science & Discovery",
+          "topic": "Ecosystem Energy Pyramids & Food Web Dynamics",
+          "duration": "60 mins",
+          "attendance": "Present",
+          "rating": 5,
+          "badge": "Deep Thinker",
+          "tutorNotes": "Lucas showed remarkable engagement during our food web flow simulation. He grasped trophic levels and trophic cascade effects very fast.",
+          "homework": "Completed with Diagram",
+          "nextSteps": "Prepare short 3-minute oral explanation of keystone species."
+        },
+        {
+          "id": "ses-101-3",
+          "date": "2026-10-02",
+          "subject": "Reading Comprehension",
+          "topic": "Inference & Character Motive Analysis in Fiction",
+          "duration": "60 mins",
+          "attendance": "Present",
+          "rating": 4,
+          "badge": "Great Effort",
+          "tutorNotes": "Solid textual evidence citing. Lucas identified subtle character motivations in chapter 4. We practiced pacing while reading aloud.",
+          "homework": "Reading Log Signed",
+          "nextSteps": "Focus on identifying thematic symbolism in non-fiction articles."
+        },
+        {
+          "id": "ses-101-4",
+          "date": "2026-09-28",
+          "subject": "Mathematics",
+          "topic": "Equivalent Fractions & Least Common Denominator (LCD)",
+          "duration": "60 mins",
+          "attendance": "Present",
+          "rating": 5,
+          "badge": "Perseverance Award",
+          "tutorNotes": "Mastered LCD methods with visual fraction bars. His confidence with unlike denominators has risen significantly compared to last month.",
+          "homework": "Practice Sheet 4A Completed",
+          "nextSteps": "Progress into multiplying fraction word problems."
+        }
+      ],
+      "reports": [],
+      "works": [
+        {
+          "id": "wrk-101-1",
+          "title": "Fraction Operations & Multi-Step Logic Quiz",
+          "subject": "Mathematics",
+          "date": "2026-10-09",
+          "score": "100/100 (A+)",
+          "imageUrl": "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=800&auto=format&fit=crop&q=80",
+          "type": "Graded Assessment",
+          "feedback": "Flawless step-by-step reduction and neat organization. Lucas verified every denominator without prompts."
+        },
+        {
+          "id": "wrk-101-2",
+          "title": "Aquatic Ecosystem Energy Flow Diagram & Summary",
+          "subject": "Science & Discovery",
+          "date": "2026-10-06",
+          "score": "98/100 (Exemplary)",
+          "imageUrl": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=800&auto=format&fit=crop&q=80",
+          "type": "Hands-on Project",
+          "feedback": "Creative illustration showing producers to apex predators. Clearly labeled energy dissipation across trophic levels."
+        },
+        {
+          "id": "wrk-101-3",
+          "title": "Reading Reflection: Character Motivations & Theme",
+          "subject": "Reading Comprehension",
+          "date": "2026-10-02",
+          "score": "92/100 (Strong)",
+          "imageUrl": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&auto=format&fit=crop&q=80",
+          "type": "Written Assignment",
+          "feedback": "Cites 3 strong quotes from the novel to justify his answer. Great progress in paragraph transitions!"
+        }
+      ]
+    }
+  ],
+  "announcements": [
+    {
+      "id": "ann-1",
+      "title": "Fall Academic Progress Reports Now Published",
+      "date": "2026-10-10",
+      "content": "Dear Parents, Term 1 Progress Reports have been finalized! You can view and download the official report card directly through your child's portal tab. Feel free to message with any questions.",
+      "category": "Academic",
+      "isPinned": true
+    },
+    {
+      "id": "ann-2",
+      "title": "Upcoming Holiday Center Schedule (Thanksgiving Recess)",
+      "date": "2026-10-05",
+      "content": "Please note that the learning center will be closed on Nov 26-27. Make-up sessions can be scheduled flexibly during the following Monday-Tuesday.",
+      "category": "Schedule",
+      "isPinned": false
+    }
+  ]
+}
