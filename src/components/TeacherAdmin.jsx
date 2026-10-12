@@ -2269,7 +2269,7 @@ export default function TeacherAdmin({
               marginBottom: '1.5rem',
               color: 'var(--text-main)'
             }}>
-              Hello {shareStudent.parentName || 'Parent'}, here is {shareStudent.fullName}'s tutoring progress report and session logs from {center?.name || 'Apex Scholars'}:
+              Hello {shareStudent.parentName || 'Parent'}, here is {shareStudent.fullName}'s tutoring progress report and session logs from {center?.name || 'Sample'}:
               <br /><br />
               👉 <strong>{`${window.location.origin}${window.location.pathname}?pin=${shareStudent.pinCode || shareStudent.accessCode}`}</strong>
               <br /><br />
@@ -2295,7 +2295,7 @@ export default function TeacherAdmin({
                 className="btn btn-primary"
                 onClick={() => {
                   const pin = shareStudent.pinCode || shareStudent.accessCode;
-                  const msg = `Hello ${shareStudent.parentName || 'Parent'}, here is ${shareStudent.fullName}'s tutoring progress report from ${center?.name || 'Apex Scholars'}: ${window.location.origin}${window.location.pathname}?pin=${pin} (Student Access PIN: ${pin})`;
+                  const msg = `Hello ${shareStudent.parentName || 'Parent'}, here is ${shareStudent.fullName}'s tutoring progress report from ${center?.name || 'Sample'}: ${window.location.origin}${window.location.pathname}?pin=${pin} (Student Access PIN: ${pin})`;
                   navigator.clipboard.writeText(msg);
                   onShowToast({ type: 'success', message: 'Share message copied to clipboard!' });
                   setShowShareModal(false);
