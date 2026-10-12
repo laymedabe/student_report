@@ -3,7 +3,21 @@
 -- ====================================================================
 -- Run this script in your Supabase project's SQL Editor (Dashboard -> SQL Editor -> New Query -> Run)
 
--- 1. Centers Table
+-- 1. Teachers / Educators Table
+CREATE TABLE IF NOT EXISTS teachers (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  passcode TEXT NOT NULL DEFAULT '1234',
+  name TEXT NOT NULL,
+  phone TEXT,
+  avatar TEXT,
+  center_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_teachers_email ON teachers(email);
+
+-- 2. Centers Table (Legacy / Center branding)
 CREATE TABLE IF NOT EXISTS centers (
   id TEXT PRIMARY KEY DEFAULT 'center-1',
   name TEXT NOT NULL,
@@ -18,9 +32,10 @@ CREATE TABLE IF NOT EXISTS centers (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Students Table (PIN-Code Access)
+-- 3. Students Table (PIN-Code Access & Teacher Assignment)
 CREATE TABLE IF NOT EXISTS students (
   id TEXT PRIMARY KEY,
+  teacher_id TEXT DEFAULT 'teacher-1' REFERENCES teachers(id) ON DELETE SET NULL,
   pin_code TEXT NOT NULL UNIQUE,
   access_code TEXT,
   full_name TEXT NOT NULL,
@@ -93,12 +108,14 @@ CREATE TABLE IF NOT EXISTS announcements (
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ====================================================================
 -- Allow access for public/anon requests through the API
+ALTER TABLE teachers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE centers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 
+CREATE POLICY "Allow public all on teachers" ON teachers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public all on centers" ON centers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public all on students" ON students FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public all on sessions" ON sessions FOR ALL USING (true) WITH CHECK (true);
@@ -108,6 +125,18 @@ CREATE POLICY "Allow public all on announcements" ON announcements FOR ALL USING
 -- ====================================================================
 -- INITIAL SEED DATA
 -- ====================================================================
+INSERT INTO teachers (id, email, passcode, name, phone, avatar, center_name)
+VALUES (
+  'teacher-1',
+  'sample@email.com',
+  '1234',
+  'Sir Kleeser',
+  '',
+  'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80',
+  'skwelahan ni kleeser'
+)
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO centers (id, name, tagline, tutor_name, tutor_title, phone, email, address, passcode, active_term)
 VALUES (
   'center-1',

@@ -44,12 +44,44 @@ app.get('/api/center', async (req, res) => {
 
 app.post('/api/auth/teacher', async (req, res) => {
   try {
-    const { passcode } = req.body;
-    const { valid, tutorName } = await db.verifyTeacherPasscode(passcode);
-    if (valid) {
-      return res.json({ success: true, tutorName });
+    const { email, passcode } = req.body;
+    const result = await db.verifyTeacherAuth(email, passcode);
+    if (result.valid) {
+      return res.json({ success: true, teacher: result.teacher, tutorName: result.teacher?.name });
     }
-    return res.status(401).json({ success: false, message: 'Incorrect teacher passcode' });
+    return res.status(401).json({ success: false, message: result.message || 'Incorrect email or passcode' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.post('/api/auth/teacher/register', async (req, res) => {
+  try {
+    const { name, email, passcode, centerName, avatar, phone } = req.body;
+    if (!name || !email || !passcode) {
+      return res.status(400).json({ success: false, message: 'Name, email, and passcode are required' });
+    }
+    const teacher = await db.registerTeacher({ name, email, passcode, centerName, avatar, phone });
+    res.status(201).json({ success: true, teacher });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+app.put('/api/teacher/profile', async (req, res) => {
+  try {
+    const teacherId = req.body.id || req.headers['x-teacher-id'] || 'teacher-1';
+    const teacher = await db.updateTeacherProfile(teacherId, req.body);
+    res.json({ success: true, teacher });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.get('/api/teachers', async (req, res) => {
+  try {
+    const teachers = await db.getAllTeachers();
+    res.json({ success: true, teachers });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -92,11 +124,23 @@ app.get('/api/portal/:accessCode', async (req, res) => {
 
     const center = await db.getCenterInfo();
     const announcements = await db.getAnnouncements();
+    const teacher = student.teacher || (await db.getTeacherById(student.teacherId || 'teacher-1'));
+
+    // Align center branding to the student's assigned teacher
+    const studentCenter = {
+      ...center,
+      name: teacher?.centerName || center?.name,
+      tutorName: teacher?.name || center?.tutorName,
+      avatar: teacher?.avatar || center?.avatar,
+      email: teacher?.email || center?.email,
+      phone: teacher?.phone || center?.phone
+    };
 
     res.json({
       success: true,
       student,
-      center,
+      teacher,
+      center: studentCenter,
       announcements
     });
   } catch (err) {
@@ -107,7 +151,8 @@ app.get('/api/portal/:accessCode', async (req, res) => {
 // 3. Students Management (Admin)
 app.get('/api/students', async (req, res) => {
   try {
-    const students = await db.getAllStudents();
+    const teacherId = req.query.teacherId || req.headers['x-teacher-id'];
+    const students = await db.getAllStudents(teacherId);
     res.json({ success: true, students });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -120,7 +165,8 @@ app.post('/api/students', async (req, res) => {
     if (!fullName) {
       return res.status(400).json({ success: false, message: 'Student name is required' });
     }
-    const student = await db.createStudent(req.body);
+    const teacherId = req.body.teacherId || req.headers['x-teacher-id'] || 'teacher-1';
+    const student = await db.createStudent({ ...req.body, teacherId });
     res.status(201).json({ success: true, student });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

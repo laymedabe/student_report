@@ -23,12 +23,18 @@ import {
   MessageSquare,
   Sparkles,
   KeyRound,
-  Camera
+  Camera,
+  LogIn,
+  UserPlus,
+  Mail,
+  User
 } from 'lucide-react';
 
 export default function TeacherAdmin({
   students,
   center,
+  currentTeacher,
+  onTeacherChange,
   announcements = [],
   onRefreshData,
   onViewAsParent,
@@ -37,13 +43,23 @@ export default function TeacherAdmin({
 }) {
   const teacherPhotoInputRef = useRef(null);
   const studentPhotoInputRef = useRef(null);
+  const registerPhotoInputRef = useRef(null);
 
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('apex_teacher_auth') === 'true';
-  });
-  const [passcode, setPasscode] = useState('');
+  // Authentication mode: 'login' | 'register'
+  const [authTab, setAuthTab] = useState('login');
+  const [loginEmail, setLoginEmail] = useState(currentTeacher?.email || 'sample@email.com');
+  const [loginPasscode, setLoginPasscode] = useState('');
   const [authError, setAuthError] = useState('');
+
+  // Register form state
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPasscode, setRegPasscode] = useState('');
+  const [regCenterName, setRegCenterName] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regAvatar, setRegAvatar] = useState('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80');
+
+  const isAuthenticated = Boolean(currentTeacher?.id);
 
   // Admin views: 'directory', 'student-detail', 'announcements', 'settings'
   const [adminView, setAdminView] = useState('directory');
@@ -110,19 +126,28 @@ export default function TeacherAdmin({
   });
 
   const [centerForm, setCenterForm] = useState({
-    name: center?.name || '',
+    name: currentTeacher?.centerName || center?.name || '',
     tagline: center?.tagline || '',
-    tutorName: center?.tutorName || '',
-    phone: center?.phone || '',
-    email: center?.email || '',
-    address: center?.address || '',
+    tutorName: currentTeacher?.name || center?.tutorName || '',
+    phone: currentTeacher?.phone || center?.phone || '',
+    email: currentTeacher?.email || center?.email || '',
+    address: currentTeacher?.address || center?.address || '',
     activeTerm: center?.activeTerm || '',
-    avatar: center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80',
+    avatar: currentTeacher?.avatar || center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80',
     passcode: ''
   });
 
   useEffect(() => {
-    if (center) {
+    if (currentTeacher) {
+      setCenterForm(prev => ({
+        ...prev,
+        name: currentTeacher.centerName || prev.name,
+        tutorName: currentTeacher.name || prev.tutorName,
+        phone: currentTeacher.phone || prev.phone,
+        email: currentTeacher.email || prev.email,
+        avatar: currentTeacher.avatar || prev.avatar
+      }));
+    } else if (center) {
       setCenterForm(prev => ({
         ...prev,
         name: center.name || '',
@@ -135,11 +160,11 @@ export default function TeacherAdmin({
         avatar: center.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'
       }));
     }
-  }, [center]);
+  }, [currentTeacher, center]);
 
   const activeStudent = students.find(s => s.id === selectedStudentId);
 
-  // Authentication submission
+  // Authentication submission (Sign In)
   const handleLogin = async (e) => {
     e.preventDefault();
     setAuthError('');
@@ -147,29 +172,80 @@ export default function TeacherAdmin({
       const res = await fetch('/api/auth/teacher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ passcode })
+        body: JSON.stringify({ email: loginEmail, passcode: loginPasscode })
       });
       const data = await res.json();
-      if (data.success) {
-        setIsAuthenticated(true);
-        localStorage.setItem('apex_teacher_auth', 'true');
-        onShowToast({ type: 'success', message: 'Welcome back, ' + (data.tutorName || 'Teacher') });
+      if (data.success && data.teacher) {
+        onTeacherChange(data.teacher);
+        onShowToast({ type: 'success', message: 'Welcome back, ' + (data.teacher.name || 'Teacher') });
       } else {
-        setAuthError(data.message || 'Incorrect passcode. Try 1234');
+        setAuthError(data.message || 'Incorrect email or passcode.');
       }
     } catch (err) {
-      if (passcode === '1234') {
-        setIsAuthenticated(true);
-        localStorage.setItem('apex_teacher_auth', 'true');
+      setAuthError('Connection error or invalid credentials.');
+    }
+  };
+
+  // Register New Teacher
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    if (!regName.trim() || !regEmail.trim() || !regPasscode.trim()) {
+      setAuthError('Please fill in your name, email, and 4-digit passcode.');
+      return;
+    }
+    try {
+      const res = await fetch('/api/auth/teacher/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: regName.trim(),
+          email: regEmail.trim(),
+          passcode: regPasscode.trim(),
+          centerName: regCenterName.trim() || 'Tutorial Center',
+          avatar: regAvatar,
+          phone: regPhone.trim()
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.teacher) {
+        onTeacherChange(data.teacher);
+        onShowToast({ type: 'success', message: `Welcome, ${data.teacher.name}! Your workspace is ready.` });
       } else {
-        setAuthError('Connection error or incorrect passcode');
+        setAuthError(data.message || 'Failed to register account.');
       }
+    } catch (err) {
+      setAuthError('Connection error or email already taken.');
     }
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('apex_teacher_auth');
+    onTeacherChange(null);
+    setLoginPasscode('');
+    onShowToast({ type: 'info', message: 'Logged out of Teacher Mode' });
+  };
+
+  const handleRegisterPhotoFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      onShowToast({ type: 'error', message: 'Photo must be under 10MB' });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      setRegAvatar(event.target.result);
+      try {
+        const formData = new FormData();
+        formData.append('photo', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success && data.url) {
+          setRegAvatar(data.url);
+        }
+      } catch (_) {}
+    };
+    reader.readAsDataURL(file);
   };
 
   // Copy Parent Link with PIN code
@@ -244,7 +320,10 @@ export default function TeacherAdmin({
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newStudent)
+        body: JSON.stringify({
+          ...newStudent,
+          teacherId: currentTeacher?.id || 'teacher-1'
+        })
       });
       const data = await res.json();
       if (data.success) {
@@ -533,21 +612,39 @@ export default function TeacherAdmin({
     reader.readAsDataURL(file);
   };
 
-  // Update Center Settings
+  // Update Center & Teacher Profile Settings
   const handleUpdateCenter = async (e) => {
     e.preventDefault();
     try {
-      const payload = { ...centerForm };
-      if (!payload.passcode) delete payload.passcode;
-      const res = await fetch('/api/center', {
+      const payload = {
+        id: currentTeacher?.id || 'teacher-1',
+        name: centerForm.tutorName,
+        centerName: centerForm.name,
+        email: centerForm.email,
+        phone: centerForm.phone,
+        avatar: centerForm.avatar
+      };
+      if (centerForm.passcode) payload.passcode = centerForm.passcode;
+
+      const res = await fetch('/api/teacher/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.teacher) {
+        onTeacherChange(data.teacher);
         onRefreshData();
-        onShowToast({ type: 'success', message: 'Center settings updated successfully!' });
+        onShowToast({ type: 'success', message: 'Profile & settings updated successfully!' });
+      } else {
+        // Fallback
+        await fetch('/api/center', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...centerForm, id: 'center-1' })
+        });
+        onRefreshData();
+        onShowToast({ type: 'success', message: 'Settings saved!' });
       }
     } catch (err) {
       onShowToast({ type: 'error', message: 'Failed to update settings' });
@@ -570,6 +667,9 @@ export default function TeacherAdmin({
   // -------------------------------------------------------------
   // VIEW: TEACHER LOGIN SCREEN
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // VIEW: TEACHER LOGIN & REGISTRATION SCREEN
+  // -------------------------------------------------------------
   if (!isAuthenticated) {
     return (
       <div style={{
@@ -584,12 +684,12 @@ export default function TeacherAdmin({
           background: 'white',
           borderRadius: 'var(--radius-xl)',
           padding: '2.5rem',
-          maxWidth: '460px',
+          maxWidth: '480px',
           width: '100%',
           boxShadow: 'var(--shadow-xl)',
-          border: '1px solid var(--border-light)',
-          textAlign: 'center'
+          border: '1px solid var(--border-light)'
         }}>
+          {/* Header Icon */}
           <div style={{
             width: '54px',
             height: '54px',
@@ -601,59 +701,263 @@ export default function TeacherAdmin({
             justifyContent: 'center',
             margin: '0 auto 1.25rem'
           }}>
-            <Lock size={26} />
+            {authTab === 'login' ? <Lock size={26} /> : <UserPlus size={26} />}
           </div>
 
-          <h2 style={{ fontSize: '1.6rem', marginBottom: '0.4rem' }}>Teacher Admin Login</h2>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.75rem' }}>
-            Authorized access to manage student reports, session updates, and student PINs.
+          <h2 style={{ fontSize: '1.6rem', marginBottom: '0.35rem', textAlign: 'center' }}>
+            {authTab === 'login' ? 'Teacher Admin Sign In' : 'Create Teacher Account'}
+          </h2>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.5rem', textAlign: 'center' }}>
+            {authTab === 'login'
+              ? 'Sign in to access and manage your dedicated student roster.'
+              : 'Register your educator profile to start managing your own students.'}
           </p>
 
-          <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', textAlign: 'left', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-                Admin Passcode:
-              </label>
-              <input
-                type="password"
-                placeholder="Enter passcode (default: 1234)"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.85rem 1rem',
-                  fontSize: '1.1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: authError ? '2px solid #ef4444' : '1px solid var(--border-strong)',
-                  outline: 'none',
-                  textAlign: 'center'
-                }}
-                autoFocus
-              />
-            </div>
-
-            {authError && (
-              <div style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600 }}>
-                {authError}
-              </div>
-            )}
-
-            <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1rem' }}>
-              Sign In to Admin Portal
-            </button>
-          </form>
-
+          {/* Tab Switcher */}
           <div style={{
-            background: '#f8fafc',
+            display: 'flex',
+            background: '#f1f5f9',
+            padding: '4px',
             borderRadius: 'var(--radius-md)',
-            padding: '0.75rem',
-            fontSize: '0.8rem',
-            color: 'var(--text-muted)',
-            border: '1px solid var(--border-light)',
-            marginBottom: '1.5rem'
+            marginBottom: '1.75rem',
+            gap: '4px'
           }}>
-            🔑 Default Demo Passcode: <strong style={{ color: 'var(--primary)' }}>1234</strong>
+            <button
+              type="button"
+              className={`btn btn-sm ${authTab === 'login' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ flex: 1, fontWeight: 600 }}
+              onClick={() => { setAuthTab('login'); setAuthError(''); }}
+            >
+              <LogIn size={15} /> Sign In
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${authTab === 'register' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ flex: 1, fontWeight: 600 }}
+              onClick={() => { setAuthTab('register'); setAuthError(''); }}
+            >
+              <UserPlus size={15} /> Create Account
+            </button>
           </div>
+
+          {/* TAB 1: LOGIN */}
+          {authTab === 'login' ? (
+            <form onSubmit={handleLogin}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+                  Teacher Email:
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="email"
+                    placeholder="Enter your email (e.g. sample@email.com)"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.8rem 1rem 0.8rem 2.4rem',
+                      fontSize: '0.95rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border-strong)',
+                      outline: 'none'
+                    }}
+                    required
+                    autoFocus
+                  />
+                  <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+                  Personal Passcode (PIN):
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="password"
+                    placeholder="Enter your 4-digit passcode"
+                    value={loginPasscode}
+                    onChange={(e) => setLoginPasscode(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.8rem 1rem 0.8rem 2.4rem',
+                      fontSize: '1.05rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: authError ? '2px solid #ef4444' : '1px solid var(--border-strong)',
+                      outline: 'none',
+                      letterSpacing: '0.1em'
+                    }}
+                    required
+                  />
+                  <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+                </div>
+              </div>
+
+              {authError && (
+                <div style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600 }}>
+                  {authError}
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
+                Sign In to Teacher Dashboard
+              </button>
+
+              <div style={{
+                background: '#f8fafc',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.75rem',
+                fontSize: '0.8rem',
+                color: 'var(--text-muted)',
+                border: '1px solid var(--border-light)',
+                marginBottom: '1.5rem',
+                textAlign: 'center'
+              }}>
+                🔑 Teacher Demo Account: <strong style={{ color: 'var(--primary)' }}>sample@email.com</strong> | Passcode: <strong style={{ color: 'var(--primary)' }}>1234</strong>
+              </div>
+            </form>
+          ) : (
+            /* TAB 2: REGISTER NEW TEACHER */
+            <form onSubmit={handleRegister}>
+              {/* Photo Upload */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', padding: '0.75rem', background: '#f8fafc', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
+                <input
+                  type="file"
+                  ref={registerPhotoInputRef}
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  style={{ display: 'none' }}
+                  onChange={handleRegisterPhotoFileChange}
+                />
+                <div
+                  style={{ position: 'relative', cursor: 'pointer' }}
+                  onClick={() => registerPhotoInputRef.current?.click()}
+                  title="Upload profile photo"
+                >
+                  <img
+                    src={regAvatar}
+                    alt="Teacher Preview"
+                    style={{
+                      width: '54px',
+                      height: '54px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid var(--primary)',
+                      display: 'block'
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-2px',
+                    right: '-2px',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1px solid white'
+                  }}>
+                    <Camera size={11} />
+                  </div>
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                    Teacher Photo
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => registerPhotoInputRef.current?.click()}
+                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', marginTop: '0.25rem' }}
+                  >
+                    <Upload size={12} /> Choose from Device
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                  Your Full Name:
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Teacher Kimberly Hayes"
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-strong)', outline: 'none' }}
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                  Email Address (used for logging in):
+                </label>
+                <input
+                  type="email"
+                  placeholder="e.g. kimberly@example.com"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-strong)', outline: 'none' }}
+                  required
+                />
+              </div>
+
+              <div className="form-row" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                    4-Digit Passcode:
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="e.g. 5678"
+                    value={regPasscode}
+                    onChange={(e) => setRegPasscode(e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '0.95rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-strong)', outline: 'none', letterSpacing: '0.08em' }}
+                    required
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                    Phone (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="+1 (555)..."
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-strong)', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                  School or Tutoring Center Name:
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Bright Horizon Learning"
+                  value={regCenterName}
+                  onChange={(e) => setRegCenterName(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '0.9rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-strong)', outline: 'none' }}
+                />
+              </div>
+
+              {authError && (
+                <div style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600 }}>
+                  {authError}
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
+                Create Teacher Account
+              </button>
+            </form>
+          )}
 
           <button
             type="button"
@@ -671,6 +975,10 @@ export default function TeacherAdmin({
   // -------------------------------------------------------------
   // VIEW: AUTHENTICATED TEACHER ADMIN WORKSPACE
   // -------------------------------------------------------------
+  const teacherDisplayName = currentTeacher?.name || center?.tutorName || 'Teacher Profile';
+  const teacherDisplayCenter = currentTeacher?.centerName || center?.name || 'Sambag Jaro Learning Center';
+  const teacherDisplayAvatar = currentTeacher?.avatar || center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80';
+
   return (
     <div className="max-width-wrapper" style={{ paddingBottom: '4rem' }}>
       {/* Admin Header Bar */}
@@ -691,8 +999,8 @@ export default function TeacherAdmin({
             title="Click to view & edit teacher profile photo"
           >
             <img
-              src={center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'}
-              alt={center?.tutorName || 'Teacher Profile'}
+              src={teacherDisplayAvatar}
+              alt={teacherDisplayName}
               style={{
                 width: '52px',
                 height: '52px',
@@ -718,14 +1026,14 @@ export default function TeacherAdmin({
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <h2 style={{ fontSize: '1.3rem', margin: 0, fontWeight: 700 }}>
-                {center?.tutorName || 'Teacher Profile'}
+                {teacherDisplayName}
               </h2>
               <span className="badge badge-emerald" style={{ fontSize: '0.72rem', fontWeight: 700 }}>
                 Teacher / Admin
               </span>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600, margin: 0, marginTop: '0.15rem' }}>
-              {center?.name || 'Sambag Jaro Learning Center'}
+              {teacherDisplayCenter}
             </p>
           </div>
         </div>

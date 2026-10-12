@@ -32,11 +32,14 @@ if (isSupabaseConfigured) {
 // -------------------------------------------------------------
 function loadLocalData() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(STORE_PATH)) return { center: {}, students: [], announcements: [] };
+  if (!fs.existsSync(STORE_PATH)) return { center: {}, teachers: [], students: [], announcements: [] };
   try {
-    return JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
+    const data = JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
+    if (!data.teachers) data.teachers = [];
+    if (!data.students) data.students = [];
+    return data;
   } catch (err) {
-    return { center: {}, students: [], announcements: [] };
+    return { center: {}, teachers: [], students: [], announcements: [] };
   }
 }
 
@@ -46,59 +49,230 @@ function saveLocalData(data) {
 }
 
 // -------------------------------------------------------------
-// CENTER & TEACHER AUTH
+// TEACHERS MANAGEMENT & MULTI-TEACHER AUTH
 // -------------------------------------------------------------
-export async function getCenterInfo() {
+export async function getAllTeachers() {
   const localData = loadLocalData();
-  const defaultAvatar = "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80";
-
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from('centers').select('*').limit(1).single();
-    if (error || !data) {
-      return {
-        name: "Apex Scholars Learning Center",
-        tagline: "Empowering Minds, Inspiring Lifelong Academic Confidence",
-        tutorName: "Teacher Kimberly Hayes, M.Ed.",
-        tutorTitle: "Lead Academic Coach & Learning Specialist",
-        phone: "+1 (555) 742-9918",
-        email: "kimberly@apexscholars.edu",
-        address: "842 Cambridge Avenue, Suite 400",
-        activeTerm: "Fall / Winter 2026 Term",
-        avatar: localData.center?.avatar || defaultAvatar
-      };
-    }
-    const { passcode, ...publicInfo } = data;
-    return {
-      id: data.id,
-      name: data.name,
-      tagline: data.tagline,
-      tutorName: data.tutor_name,
-      tutorTitle: data.tutor_title,
-      phone: data.phone,
-      email: data.email,
-      address: data.address,
-      activeTerm: data.active_term,
-      avatar: data.avatar || localData.center?.avatar || defaultAvatar
-    };
+    try {
+      const { data, error } = await supabase.from('teachers').select('*').order('created_at', { ascending: true });
+      if (!error && data && data.length > 0) {
+        return data.map(t => ({
+          id: t.id,
+          name: t.name,
+          email: t.email,
+          phone: t.phone,
+          avatar: t.avatar,
+          centerName: t.center_name,
+          createdAt: t.created_at
+        }));
+      }
+    } catch (_) { }
+  }
+  return (localData.teachers || []).map(t => {
+    const { passcode, ...rest } = t;
+    return rest;
+  });
+}
+
+export async function getTeacherById(teacherId) {
+  const localData = loadLocalData();
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase.from('teachers').select('*').eq('id', teacherId).maybeSingle();
+      if (!error && data) {
+        const { passcode, ...publicInfo } = data;
+        return {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          avatar: data.avatar,
+          centerName: data.center_name,
+          createdAt: data.created_at
+        };
+      }
+    } catch (_) { }
   }
 
-  const { passcode, ...publicInfo } = localData.center || {};
+  const teacher = (localData.teachers || []).find(t => t.id === teacherId);
+  if (teacher) {
+    const { passcode, ...publicInfo } = teacher;
+    return publicInfo;
+  }
+
+  // Fallback to center profile
   return {
-    ...publicInfo,
-    avatar: publicInfo.avatar || defaultAvatar
+    id: 'teacher-1',
+    name: localData.center?.tutorName || 'Sir Kleeser',
+    email: localData.center?.email || 'sample@email.com',
+    phone: localData.center?.phone || '',
+    avatar: localData.center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80',
+    centerName: localData.center?.name || 'skwelahan ni kleeser'
   };
 }
 
-export async function verifyTeacherPasscode(inputPasscode) {
+export async function verifyTeacherAuth(email, inputPasscode) {
+  const cleanPasscode = (inputPasscode || '').trim();
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const localData = loadLocalData();
+
   if (isSupabaseConfigured) {
-    const { data } = await supabase.from('centers').select('passcode, tutor_name').limit(1).single();
-    const valid = data && data.passcode === (inputPasscode || '').trim();
-    return { valid, tutorName: data?.tutor_name || 'Teacher' };
+    try {
+      let query = supabase.from('teachers').select('*');
+      if (cleanEmail) {
+        query = query.ilike('email', cleanEmail);
+      }
+      const { data, error } = await query;
+      if (!error && data && data.length > 0) {
+        const match = data.find(t => t.passcode === cleanPasscode);
+        if (match) {
+          const { passcode: _, ...publicInfo } = match;
+          return {
+            valid: true,
+            teacher: {
+              id: match.id,
+              name: match.name,
+              email: match.email,
+              phone: match.phone,
+              avatar: match.avatar,
+              centerName: match.center_name,
+              createdAt: match.created_at
+            }
+          };
+        }
+      }
+    } catch (_) { }
   }
 
-  const data = loadLocalData();
-  const valid = (data.center?.passcode || '1234') === (inputPasscode || '').trim();
-  return { valid, tutorName: data.center?.tutorName || 'Teacher' };
+  // Local fallback check
+  const teachers = localData.teachers || [];
+  let foundTeacher = null;
+
+  if (cleanEmail) {
+    foundTeacher = teachers.find(t => t.email?.toLowerCase() === cleanEmail && t.passcode === cleanPasscode);
+  } else {
+    // Passcode only match (legacy demo)
+    foundTeacher = teachers.find(t => t.passcode === cleanPasscode);
+  }
+
+  if (foundTeacher) {
+    const { passcode: _, ...publicInfo } = foundTeacher;
+    return { valid: true, teacher: publicInfo };
+  }
+
+  // Legacy center passcode fallback
+  const centerPass = (localData.center?.passcode || '1234').trim();
+  if (cleanPasscode === centerPass) {
+    return {
+      valid: true,
+      teacher: {
+        id: 'teacher-1',
+        name: localData.center?.tutorName || 'Sir Kleeser',
+        email: cleanEmail || localData.center?.email || 'sample@email.com',
+        avatar: localData.center?.avatar,
+        centerName: localData.center?.name || 'skwelahan ni kleeser'
+      }
+    };
+  }
+
+  return { valid: false, message: 'Invalid email or passcode' };
+}
+
+export async function registerTeacher(teacherData) {
+  const email = (teacherData.email || '').trim().toLowerCase();
+  const name = (teacherData.name || '').trim();
+  const passcode = (teacherData.passcode || '').trim();
+  const centerName = (teacherData.centerName || teacherData.schoolName || 'Learning Center').trim();
+  const avatar = teacherData.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80';
+  const phone = (teacherData.phone || '').trim();
+
+  if (!email || !name || !passcode) {
+    throw new Error('Name, email, and passcode are required');
+  }
+
+  const localData = loadLocalData();
+  if (!localData.teachers) localData.teachers = [];
+
+  if (localData.teachers.some(t => t.email?.toLowerCase() === email)) {
+    throw new Error('An account with this email already exists.');
+  }
+
+  const newTeacher = {
+    id: `teacher-${Date.now()}`,
+    name,
+    email,
+    passcode,
+    phone,
+    avatar,
+    centerName,
+    createdAt: new Date().toISOString()
+  };
+
+  if (isSupabaseConfigured) {
+    try {
+      const payload = {
+        id: newTeacher.id,
+        name: newTeacher.name,
+        email: newTeacher.email,
+        passcode: newTeacher.passcode,
+        phone: newTeacher.phone,
+        avatar: newTeacher.avatar,
+        center_name: newTeacher.centerName
+      };
+      const { error } = await supabase.from('teachers').insert([payload]);
+      if (error && error.code === '23505') {
+        throw new Error('An account with this email already exists.');
+      }
+    } catch (err) {
+      if (err.message?.includes('already exists')) throw err;
+    }
+  }
+
+  localData.teachers.push(newTeacher);
+  saveLocalData(localData);
+
+  const { passcode: _, ...publicInfo } = newTeacher;
+  return publicInfo;
+}
+
+export async function updateTeacherProfile(teacherId, updateData) {
+  const localData = loadLocalData();
+  if (!localData.teachers) localData.teachers = [];
+  const idx = localData.teachers.findIndex(t => t.id === teacherId);
+
+  let updatedRecord = null;
+  if (idx !== -1) {
+    localData.teachers[idx] = { ...localData.teachers[idx], ...updateData };
+    saveLocalData(localData);
+    updatedRecord = localData.teachers[idx];
+  }
+
+  if (isSupabaseConfigured) {
+    try {
+      const payload = {};
+      if (updateData.name) payload.name = updateData.name;
+      if (updateData.email) payload.email = updateData.email;
+      if (updateData.passcode) payload.passcode = updateData.passcode;
+      if (updateData.phone !== undefined) payload.phone = updateData.phone;
+      if (updateData.avatar) payload.avatar = updateData.avatar;
+      if (updateData.centerName) payload.center_name = updateData.centerName;
+
+      await supabase.from('teachers').update(payload).eq('id', teacherId);
+    } catch (_) { }
+  }
+
+  if (updatedRecord) {
+    const { passcode, ...publicInfo } = updatedRecord;
+    return publicInfo;
+  }
+  return { id: teacherId, ...updateData };
+}
+
+// Legacy helper for single-passcode verify
+export async function verifyTeacherPasscode(inputPasscode) {
+  const result = await verifyTeacherAuth(null, inputPasscode);
+  return { valid: result.valid, tutorName: result.teacher?.name || 'Teacher' };
 }
 
 export async function updateCenterInfo(updateData) {
@@ -184,6 +358,8 @@ export async function getStudentByPin(inputPin) {
       status: student.status,
       avatar: student.avatar,
       learningGoals: student.learning_goals,
+      teacherId: student.teacher_id || 'teacher-1',
+      teacher: await getTeacherById(student.teacher_id || 'teacher-1'),
       sessions: (sessions || []).map(s => ({
         id: s.id,
         date: s.date,
@@ -215,76 +391,120 @@ export async function getStudentByPin(inputPin) {
   }
 
   const data = loadLocalData();
-  return data.students.find(s =>
+  const student = data.students.find(s =>
     (s.pinCode && s.pinCode.toUpperCase() === pin) ||
     (s.accessCode && s.accessCode.toUpperCase() === pin)
-  ) || null;
+  );
+  if (!student) return null;
+
+  const teacher = await getTeacherById(student.teacherId || 'teacher-1');
+  return {
+    ...student,
+    teacherId: student.teacherId || 'teacher-1',
+    teacher
+  };
 }
 
-export async function getAllStudents() {
+export async function getAllStudents(teacherId) {
   if (isSupabaseConfigured) {
-    const { data: students, error } = await supabase
-      .from('students')
-      .select(`
-        *,
-        sessions (*),
-        reports (*)
-      `)
-      .order('created_at', { ascending: false });
+    try {
+      let query = supabase
+        .from('students')
+        .select(`
+          *,
+          sessions (*),
+          reports (*)
+        `)
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
+      if (teacherId) {
+        if (teacherId === 'teacher-1') {
+          query = query.or(`teacher_id.eq.${teacherId},teacher_id.is.null`);
+        } else {
+          query = query.eq('teacher_id', teacherId);
+        }
+      }
 
-    return (students || []).map(student => ({
-      id: student.id,
-      pinCode: student.pin_code,
-      accessCode: student.access_code || student.pin_code,
-      fullName: student.full_name,
-      preferredName: student.preferred_name,
-      grade: student.grade,
-      subjects: student.subjects || [],
-      parentName: student.parent_name,
-      parentPhone: student.parent_phone,
-      parentEmail: student.parent_email,
-      enrolledDate: student.enrolled_date,
-      status: student.status,
-      avatar: student.avatar,
-      learningGoals: student.learning_goals,
-      sessions: (student.sessions || []).map(s => ({
-        id: s.id,
-        date: s.date,
-        subject: s.subject,
-        topic: s.topic,
-        duration: s.duration,
-        attendance: s.attendance,
-        rating: s.rating,
-        badge: s.badge,
-        tutorNotes: s.tutor_notes,
-        homework: s.homework,
-        nextSteps: s.next_steps
-      })),
-      reports: (student.reports || []).map(r => ({
-        id: r.id,
-        title: r.title,
-        period: r.period,
-        issueDate: r.issue_date,
-        overallGrade: r.overall_grade,
-        attendanceRate: r.attendance_rate,
-        behaviorRating: r.behavior_rating,
-        subjectEvaluations: r.subject_evaluations || [],
-        strengths: r.strengths || [],
-        areasForGrowth: r.areas_for_growth || [],
-        tutorSummary: r.tutor_summary,
-        teacherSignature: r.teacher_signature
-      }))
-    }));
+      let { data: students, error } = await query;
+
+      // If teacher_id column doesn't exist yet on Supabase, fallback query all students
+      if (error && error.message?.includes('teacher_id')) {
+        const fallbackRes = await supabase
+          .from('students')
+          .select(`*, sessions (*), reports (*)`)
+          .order('created_at', { ascending: false });
+        students = fallbackRes.data;
+        error = fallbackRes.error;
+      }
+
+      if (!error && students) {
+        const mapped = (students || []).map(student => ({
+          id: student.id,
+          teacherId: student.teacher_id || 'teacher-1',
+          pinCode: student.pin_code,
+          accessCode: student.access_code || student.pin_code,
+          fullName: student.full_name,
+          preferredName: student.preferred_name,
+          grade: student.grade,
+          subjects: student.subjects || [],
+          parentName: student.parent_name,
+          parentPhone: student.parent_phone,
+          parentEmail: student.parent_email,
+          enrolledDate: student.enrolled_date,
+          status: student.status,
+          avatar: student.avatar,
+          learningGoals: student.learning_goals,
+          sessions: (student.sessions || []).map(s => ({
+            id: s.id,
+            date: s.date,
+            subject: s.subject,
+            topic: s.topic,
+            duration: s.duration,
+            attendance: s.attendance,
+            rating: s.rating,
+            badge: s.badge,
+            tutorNotes: s.tutor_notes,
+            homework: s.homework,
+            nextSteps: s.next_steps
+          })),
+          reports: (student.reports || []).map(r => ({
+            id: r.id,
+            title: r.title,
+            period: r.period,
+            issueDate: r.issue_date,
+            overallGrade: r.overall_grade,
+            attendanceRate: r.attendance_rate,
+            behaviorRating: r.behavior_rating,
+            subjectEvaluations: r.subject_evaluations || [],
+            strengths: r.strengths || [],
+            areasForGrowth: r.areas_for_growth || [],
+            tutorSummary: r.tutor_summary,
+            teacherSignature: r.teacher_signature
+          }))
+        }));
+
+        if (teacherId) {
+          return mapped.filter(s => s.teacherId === teacherId);
+        }
+        return mapped;
+      }
+    } catch (_) { }
   }
 
   const data = loadLocalData();
-  return data.students || [];
+  const list = (data.students || []).map(s => ({
+    ...s,
+    teacherId: s.teacherId || 'teacher-1'
+  }));
+  if (teacherId) {
+    return list.filter(s => s.teacherId === teacherId);
+  }
+  return list;
 }
 
 export async function createStudent(studentData) {
   let pin = (studentData.pinCode || '').trim();
+  const assignedTeacherId = studentData.teacherId || 'teacher-1';
   
   if (isSupabaseConfigured) {
     if (!pin) {
@@ -293,6 +513,7 @@ export async function createStudent(studentData) {
 
     const newStudent = {
       id: `stu-${Date.now()}`,
+      teacher_id: assignedTeacherId,
       pin_code: pin,
       access_code: pin,
       full_name: studentData.fullName.trim(),
@@ -310,23 +531,32 @@ export async function createStudent(studentData) {
       learning_goals: studentData.learningGoals || 'Develop strong study habits and subject mastery.'
     };
 
-    const { data, error } = await supabase.from('students').insert([newStudent]).select().single();
-    if (error) throw error;
-
-    return {
-      ...newStudent,
-      pinCode: newStudent.pin_code,
-      accessCode: newStudent.access_code,
-      fullName: newStudent.full_name,
-      preferredName: newStudent.preferred_name,
-      parentName: newStudent.parent_name,
-      parentPhone: newStudent.parent_phone,
-      parentEmail: newStudent.parent_email,
-      enrolledDate: newStudent.enrolled_date,
-      learningGoals: newStudent.learning_goals,
-      sessions: [],
-      reports: []
-    };
+    try {
+      let { data, error } = await supabase.from('students').insert([newStudent]).select().single();
+      if (error && error.message?.includes('teacher_id')) {
+        const { teacher_id, ...fallbackStudent } = newStudent;
+        const retry = await supabase.from('students').insert([fallbackStudent]).select().single();
+        data = retry.data;
+        error = retry.error;
+      }
+      if (!error && data) {
+        return {
+          ...newStudent,
+          teacherId: assignedTeacherId,
+          pinCode: newStudent.pin_code,
+          accessCode: newStudent.access_code,
+          fullName: newStudent.full_name,
+          preferredName: newStudent.preferred_name,
+          parentName: newStudent.parent_name,
+          parentPhone: newStudent.parent_phone,
+          parentEmail: newStudent.parent_email,
+          enrolledDate: newStudent.enrolled_date,
+          learningGoals: newStudent.learning_goals,
+          sessions: [],
+          reports: []
+        };
+      }
+    } catch (_) { }
   }
 
   const data = loadLocalData();
@@ -339,6 +569,7 @@ export async function createStudent(studentData) {
 
   const newStudent = {
     id: `stu-${Date.now()}`,
+    teacherId: assignedTeacherId,
     pinCode: pin,
     accessCode: pin,
     fullName: studentData.fullName.trim(),

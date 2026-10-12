@@ -1,4 +1,17 @@
 {
+  "teachers": [
+    {
+      "id": "teacher-1",
+      "name": "Sir Kleeser",
+      "email": "sample@email.com",
+      "passcode": "1234",
+      "phone": "",
+      "centerName": "skwelahan ni kleeser",
+      "address": "Sambag jaro",
+      "avatar": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
   "center": {
     "name": "skwelahan ni kleeser",
     "tagline": "Empowering Minds, Inspiring Lifelong Academic Confidence",
@@ -13,6 +26,7 @@
   "students": [
     {
       "id": "stu-101",
+      "teacherId": "teacher-1",
       "pinCode": "9421",
       "accessCode": "9421",
       "fullName": "Lucas Vance",

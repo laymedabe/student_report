@@ -43,6 +43,16 @@ export default function App() {
     }, 3500);
   }, []);
 
+  // Teacher state
+  const [currentTeacher, setCurrentTeacher] = useState(() => {
+    try {
+      const stored = localStorage.getItem('apex_teacher_profile');
+      return stored ? JSON.parse(stored) : null;
+    } catch (_) {
+      return null;
+    }
+  });
+
   // Fetch center info
   const fetchPublicData = useCallback(async () => {
     try {
@@ -54,10 +64,12 @@ export default function App() {
     }
   }, []);
 
-  // Fetch all students (for Teacher mode)
-  const fetchAllStudents = useCallback(async () => {
+  // Fetch students (isolated per teacher)
+  const fetchAllStudents = useCallback(async (teacherId) => {
     try {
-      const res = await fetch('/api/students');
+      const tId = teacherId || currentTeacher?.id;
+      const url = tId ? `/api/students?teacherId=${encodeURIComponent(tId)}` : '/api/students';
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setStudents(data.students);
@@ -65,7 +77,18 @@ export default function App() {
     } catch (err) {
       console.warn('Failed to fetch students list:', err);
     }
-  }, []);
+  }, [currentTeacher?.id]);
+
+  const handleTeacherChange = useCallback((teacher) => {
+    setCurrentTeacher(teacher);
+    if (teacher) {
+      localStorage.setItem('apex_teacher_profile', JSON.stringify(teacher));
+      fetchAllStudents(teacher.id);
+    } else {
+      localStorage.removeItem('apex_teacher_profile');
+      fetchAllStudents();
+    }
+  }, [fetchAllStudents]);
 
   // Fetch specific student by PIN code (for Parent mode)
   const fetchStudentByCode = useCallback(async (code) => {
@@ -147,14 +170,14 @@ export default function App() {
   const handleSwitchMode = (newMode) => {
     setMode(newMode);
     if (newMode === 'teacher') {
-      fetchAllStudents();
+      fetchAllStudents(currentTeacher?.id);
     }
   };
 
   // Refresh all data
   const handleRefreshData = () => {
     fetchPublicData();
-    fetchAllStudents();
+    fetchAllStudents(currentTeacher?.id);
     if (parentCode) {
       fetchStudentByCode(parentCode);
     }
@@ -192,6 +215,8 @@ export default function App() {
           <TeacherAdmin 
             students={students}
             center={center}
+            currentTeacher={currentTeacher}
+            onTeacherChange={handleTeacherChange}
             announcements={announcements}
             onRefreshData={handleRefreshData}
             onViewAsParent={handleViewAsParent}

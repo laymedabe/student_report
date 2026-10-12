@@ -834,7 +834,7 @@ export default function ParentDashboard({
             <div className="report-signature-block">
               <div>
                 <div className="sig-line">
-                  {center?.tutorName || 'Teacher Kimberly Hayes'}
+                  {student?.teacher?.name || center?.tutorName || 'Teacher'}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   Instructor Signature & Date: {latestReport?.issueDate || new Date().toISOString().split('T')[0]}
