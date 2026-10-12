@@ -33,21 +33,23 @@ export default function Navbar({
         <div className="nav-actions">
           {currentMode === 'parent' ? (
             <button 
-              className="btn btn-secondary btn-sm"
+              className="btn btn-secondary"
               onClick={() => onSwitchMode('teacher')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, minHeight: '44px', padding: '0.55rem 1rem', fontSize: '0.9rem' }}
+              aria-label="Switch to Teacher Admin Mode"
             >
-              <ShieldCheck size={16} color="var(--primary)" />
-              Teacher Admin
+              <ShieldCheck size={18} color="var(--primary)" />
+              <span>Teacher Admin</span>
             </button>
           ) : (
             <button 
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary"
               onClick={() => onSwitchMode('parent')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, minHeight: '44px', padding: '0.55rem 1rem', fontSize: '0.9rem' }}
+              aria-label="Switch to Parent Portal View"
             >
-              <UserCheck size={16} />
-              Parent Portal View
+              <UserCheck size={18} />
+              <span>Parent Portal View</span>
             </button>
           )}
         </div>

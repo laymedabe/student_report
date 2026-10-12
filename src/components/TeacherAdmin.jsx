@@ -775,17 +775,20 @@ export default function TeacherAdmin({
                 <div style={{ position: 'relative' }}>
                   <input
                     type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     placeholder="Enter your 4-digit passcode"
                     value={loginPasscode}
                     onChange={(e) => setLoginPasscode(e.target.value)}
                     style={{
                       width: '100%',
                       padding: '0.8rem 1rem 0.8rem 2.4rem',
-                      fontSize: '1.05rem',
+                      fontSize: '16px',
+                      minHeight: '48px',
                       borderRadius: 'var(--radius-md)',
-                      border: authError ? '2px solid #ef4444' : '1px solid var(--border-strong)',
+                      border: authError ? '2px solid #ef4444' : '1.5px solid var(--border-strong)',
                       outline: 'none',
-                      letterSpacing: '0.1em'
+                      letterSpacing: '0.12em'
                     }}
                     required
                   />
@@ -900,10 +903,12 @@ export default function TeacherAdmin({
                   </label>
                   <input
                     type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     placeholder="e.g. 5678"
                     value={regPasscode}
                     onChange={(e) => setRegPasscode(e.target.value)}
-                    style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '0.95rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-strong)', outline: 'none', letterSpacing: '0.08em' }}
+                    style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '16px', minHeight: '48px', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border-strong)', outline: 'none', letterSpacing: '0.1em' }}
                     required
                   />
                 </div>
@@ -1138,9 +1143,15 @@ export default function TeacherAdmin({
             </button>
           </div>
 
+          {/* Mobile Scroll Hint */}
+          <div className="table-scroll-hint no-print">
+            👉 Swipe table left & right to view all student records and actions
+          </div>
+
           {/* Students Table */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <table className="admin-table">
+            <div className="table-responsive">
+              <table className="admin-table" style={{ minWidth: '780px' }}>
               <thead>
                 <tr>
                   <th>Student</th>
@@ -1271,6 +1282,7 @@ export default function TeacherAdmin({
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}
@@ -1928,12 +1940,14 @@ export default function TeacherAdmin({
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     className="form-input"
                     placeholder="e.g. 4829 (4-6 digits)"
                     value={newStudent.pinCode}
-                    onChange={(e) => setNewStudent({ ...newStudent, pinCode: e.target.value })}
+                    onChange={(e) => setNewStudent({ ...newStudent, pinCode: e.target.value.toUpperCase() })}
                     required
-                    style={{ fontWeight: 700, letterSpacing: '0.08em' }}
+                    style={{ fontWeight: 800, letterSpacing: '0.12em', fontSize: '16px' }}
                   />
                 </div>
               </div>

@@ -734,55 +734,65 @@ export default function ParentDashboard({
             </div>
 
             {/* Student Meta Details */}
-            <table className="student-meta-table">
-              <tbody>
-                <tr>
-                  <td><strong>Student Name:</strong> {student.fullName}</td>
-                  <td><strong>Grade Level:</strong> {student.grade}</td>
-                </tr>
-                <tr>
-                  <td><strong>Parent / Guardian:</strong> {student.parentName}</td>
-                  <td><strong>Attendance Record:</strong> {latestReport?.attendanceRate || `${attendanceRate}%`}</td>
-                </tr>
-                <tr>
-                  <td><strong>Enrolled Subjects:</strong> {(student.subjects || []).join(', ')}</td>
-                  <td><strong>Student PIN:</strong> <span style={{ fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.05em' }}>{displayPin}</span></td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="table-responsive" style={{ marginBottom: '1.75rem' }}>
+              <table className="student-meta-table" style={{ minWidth: '480px', margin: 0 }}>
+                <tbody>
+                  <tr>
+                    <td><strong>Student Name:</strong> {student.fullName}</td>
+                    <td><strong>Grade Level:</strong> {student.grade}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Parent / Guardian:</strong> {student.parentName}</td>
+                    <td><strong>Attendance Record:</strong> {latestReport?.attendanceRate || `${attendanceRate}%`}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Enrolled Subjects:</strong> {(student.subjects || []).join(', ')}</td>
+                    <td><strong>Student PIN:</strong> <span style={{ fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.05em' }}>{displayPin}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             {/* Subject Evaluations Table */}
-            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: '#0f172a' }}>
-              Academic Subject Performance & Mastery
-            </h4>
-            <table className="grades-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '25%' }}>Subject</th>
-                  <th style={{ width: '20%' }}>Grade</th>
-                  <th style={{ width: '25%' }}>Mastery Level</th>
-                  <th style={{ width: '30%' }}>Teacher Observations</th>
-                </tr>
-              </thead>
-              <tbody>
-                {latestReport?.subjectEvaluations && latestReport.subjectEvaluations.length > 0 ? (
-                  latestReport.subjectEvaluations.map((evalItem, i) => (
-                    <tr key={i}>
-                      <td style={{ fontWeight: 700 }}>{evalItem.subject}</td>
-                      <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{evalItem.grade}</td>
-                      <td>{evalItem.mastery}</td>
-                      <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{evalItem.comment}</td>
-                    </tr>
-                  ))
-                ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <h4 style={{ fontSize: '1.15rem', color: '#0f172a', margin: 0 }}>
+                Academic Subject Performance & Mastery
+              </h4>
+              <div className="table-scroll-hint no-print" style={{ margin: 0 }}>
+                👉 Swipe table to see all notes
+              </div>
+            </div>
+
+            <div className="table-responsive" style={{ marginBottom: '1.5rem' }}>
+              <table className="grades-table" style={{ minWidth: '540px', margin: 0 }}>
+                <thead>
                   <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
-                      No evaluation entries recorded yet.
-                    </td>
+                    <th style={{ width: '25%' }}>Subject</th>
+                    <th style={{ width: '20%' }}>Grade</th>
+                    <th style={{ width: '25%' }}>Mastery Level</th>
+                    <th style={{ width: '30%' }}>Teacher Observations</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {latestReport?.subjectEvaluations && latestReport.subjectEvaluations.length > 0 ? (
+                    latestReport.subjectEvaluations.map((evalItem, i) => (
+                      <tr key={i}>
+                        <td style={{ fontWeight: 700 }}>{evalItem.subject}</td>
+                        <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{evalItem.grade}</td>
+                        <td style={{ fontWeight: 600 }}>{evalItem.mastery}</td>
+                        <td style={{ fontSize: '0.925rem', color: 'var(--text-main)', lineHeight: 1.5 }}>{evalItem.comment}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
+                        No evaluation entries recorded yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
             {/* Strengths & Growth Matrix */}
             <div className="report-evaluation-section">
