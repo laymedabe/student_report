@@ -243,7 +243,7 @@ export default function TeacherAdmin({
         if (data.success && data.url) {
           setRegAvatar(data.url);
         }
-      } catch (_) {}
+      } catch (_) { }
     };
     reader.readAsDataURL(file);
   };
@@ -802,19 +802,6 @@ export default function TeacherAdmin({
               <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
                 Sign In to Teacher Dashboard
               </button>
-
-              <div style={{
-                background: '#f8fafc',
-                borderRadius: 'var(--radius-md)',
-                padding: '0.75rem',
-                fontSize: '0.8rem',
-                color: 'var(--text-muted)',
-                border: '1px solid var(--border-light)',
-                marginBottom: '1.5rem',
-                textAlign: 'center'
-              }}>
-                🔑 Teacher Demo Account: <strong style={{ color: 'var(--primary)' }}>sample@email.com</strong> | Passcode: <strong style={{ color: 'var(--primary)' }}>1234</strong>
-              </div>
             </form>
           ) : (
             /* TAB 2: REGISTER NEW TEACHER */
