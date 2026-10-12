@@ -1,39 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Share2, 
-  ExternalLink, 
-  Trash2, 
-  Edit3, 
-  Calendar, 
-  FileText, 
-  BookOpen, 
-  Award, 
-  Settings, 
-  Bell, 
-  CheckCircle2, 
-  ArrowLeft, 
-  Lock, 
-  LogOut, 
-  Star, 
-  Upload, 
-  Copy, 
+import {
+  Users,
+  Plus,
+  Search,
+  Share2,
+  ExternalLink,
+  Trash2,
+  Edit3,
+  Calendar,
+  FileText,
+  BookOpen,
+  Award,
+  Settings,
+  Bell,
+  CheckCircle2,
+  ArrowLeft,
+  Lock,
+  LogOut,
+  Star,
+  Upload,
+  Copy,
   MessageSquare,
   Sparkles,
   KeyRound,
   Camera
 } from 'lucide-react';
 
-export default function TeacherAdmin({ 
-  students, 
-  center, 
-  announcements = [], 
-  onRefreshData, 
-  onViewAsParent, 
-  onShowToast, 
-  onExitAdmin 
+export default function TeacherAdmin({
+  students,
+  center,
+  announcements = [],
+  onRefreshData,
+  onViewAsParent,
+  onShowToast,
+  onExitAdmin
 }) {
   const teacherPhotoInputRef = useRef(null);
   const studentPhotoInputRef = useRef(null);
@@ -236,7 +236,7 @@ export default function TeacherAdmin({
   const handleSaveStudent = async (e) => {
     e.preventDefault();
     try {
-      const url = editingStudentId 
+      const url = editingStudentId
         ? `/api/students/${editingStudentId}`
         : '/api/students';
       const method = editingStudentId ? 'PUT' : 'POST';
@@ -266,8 +266,8 @@ export default function TeacherAdmin({
         const pin = data.student?.pinCode || data.student?.accessCode || newStudent.pinCode;
         onShowToast({
           type: 'success',
-          message: editingStudentId 
-            ? `Updated student profile for ${newStudent.fullName}!` 
+          message: editingStudentId
+            ? `Updated student profile for ${newStudent.fullName}!`
             : `Enrolled ${data.student?.fullName || newStudent.fullName} with Student PIN: ${pin}`
         });
         if (!editingStudentId && data.student) {
@@ -278,9 +278,9 @@ export default function TeacherAdmin({
         onShowToast({ type: 'error', message: data.message || 'Error saving student' });
       }
     } catch (err) {
-      onShowToast({ 
-        type: 'error', 
-        message: editingStudentId ? 'Failed to update student profile' : 'Failed to create student' 
+      onShowToast({
+        type: 'error',
+        message: editingStudentId ? 'Failed to update student profile' : 'Failed to create student'
       });
     }
   };
@@ -351,7 +351,7 @@ export default function TeacherAdmin({
     e.preventDefault();
     if (!activeStudent) return;
     try {
-      const url = editingSessionId 
+      const url = editingSessionId
         ? `/api/students/${activeStudent.id}/sessions/${editingSessionId}`
         : `/api/students/${activeStudent.id}/sessions`;
       const method = editingSessionId ? 'PUT' : 'POST';
@@ -378,15 +378,15 @@ export default function TeacherAdmin({
           nextSteps: ''
         });
         onRefreshData();
-        onShowToast({ 
-          type: 'success', 
-          message: editingSessionId ? 'Tutoring session updated!' : 'Tutoring session logged!' 
+        onShowToast({
+          type: 'success',
+          message: editingSessionId ? 'Tutoring session updated!' : 'Tutoring session logged!'
         });
       }
     } catch (err) {
-      onShowToast({ 
-        type: 'error', 
-        message: editingSessionId ? 'Failed to update session' : 'Failed to log session' 
+      onShowToast({
+        type: 'error',
+        message: editingSessionId ? 'Failed to update session' : 'Failed to log session'
       });
     }
   };
@@ -499,7 +499,7 @@ export default function TeacherAdmin({
         if (data.success && data.url) {
           setCenterForm(prev => ({ ...prev, avatar: data.url }));
         }
-      } catch (_) {}
+      } catch (_) { }
     };
     reader.readAsDataURL(file);
   };
@@ -528,7 +528,7 @@ export default function TeacherAdmin({
         if (data.success && data.url) {
           setNewStudent(prev => ({ ...prev, avatar: data.url }));
         }
-      } catch (_) {}
+      } catch (_) { }
     };
     reader.readAsDataURL(file);
   };
@@ -559,9 +559,9 @@ export default function TeacherAdmin({
     const q = searchQuery.toLowerCase();
     const pin = (s.pinCode || s.accessCode || '').toLowerCase();
     return s.fullName.toLowerCase().includes(q) ||
-           s.grade.toLowerCase().includes(q) ||
-           pin.includes(q) ||
-           s.parentName.toLowerCase().includes(q);
+      s.grade.toLowerCase().includes(q) ||
+      pin.includes(q) ||
+      s.parentName.toLowerCase().includes(q);
   });
 
   const totalSessionsCount = students.reduce((sum, s) => sum + (s.sessions?.length || 0), 0);
@@ -614,7 +614,7 @@ export default function TeacherAdmin({
               <label style={{ display: 'block', textAlign: 'left', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                 Admin Passcode:
               </label>
-              <input 
+              <input
                 type="password"
                 placeholder="Enter passcode (default: 1234)"
                 value={passcode}
@@ -655,8 +655,8 @@ export default function TeacherAdmin({
             🔑 Default Demo Passcode: <strong style={{ color: 'var(--primary)' }}>1234</strong>
           </div>
 
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="btn btn-ghost btn-sm"
             onClick={onExitAdmin}
             style={{ width: '100%' }}
@@ -685,13 +685,13 @@ export default function TeacherAdmin({
         gap: '1rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <div 
+          <div
             style={{ position: 'relative', cursor: 'pointer' }}
             onClick={() => setAdminView('settings')}
             title="Click to view & edit teacher profile photo"
           >
-            <img 
-              src={center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'} 
+            <img
+              src={center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'}
               alt={center?.tutorName || 'Teacher Profile'}
               style={{
                 width: '52px',
@@ -731,25 +731,25 @@ export default function TeacherAdmin({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button 
+          <button
             className={`btn btn-sm ${adminView === 'directory' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => { setAdminView('directory'); setSelectedStudentId(null); }}
           >
             <Users size={15} /> Students ({students.length})
           </button>
-          <button 
+          <button
             className={`btn btn-sm ${adminView === 'announcements' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setAdminView('announcements')}
           >
             <Bell size={15} /> Noticeboard ({announcements.length})
           </button>
-          <button 
+          <button
             className={`btn btn-sm ${adminView === 'settings' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setAdminView('settings')}
           >
             <Settings size={15} /> Center Settings
           </button>
-          <button 
+          <button
             className="btn btn-ghost btn-sm"
             onClick={handleLogout}
             style={{ color: '#ef4444' }}
@@ -819,7 +819,7 @@ export default function TeacherAdmin({
           }}>
             <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
               <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-subtle)' }} />
-              <input 
+              <input
                 type="text"
                 placeholder="Search student, grade, or PIN..."
                 value={searchQuery}
@@ -835,7 +835,7 @@ export default function TeacherAdmin({
               />
             </div>
 
-            <button 
+            <button
               className="btn btn-primary"
               onClick={handleOpenNewStudent}
             >
@@ -864,8 +864,8 @@ export default function TeacherAdmin({
                       <tr key={stu.id}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <img 
-                              src={stu.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"} 
+                            <img
+                              src={stu.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"}
                               alt={stu.fullName}
                               style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
                             />
@@ -897,7 +897,7 @@ export default function TeacherAdmin({
                             <span className="badge badge-indigo" style={{ letterSpacing: '0.08em', fontSize: '0.85rem', fontWeight: 800 }}>
                               PIN: {studentPin}
                             </span>
-                            <button 
+                            <button
                               className="btn btn-ghost btn-sm"
                               style={{ padding: '0.25rem 0.5rem', color: 'var(--primary)' }}
                               onClick={() => handleCopyLink(stu)}
@@ -905,7 +905,7 @@ export default function TeacherAdmin({
                             >
                               <Copy size={14} />
                             </button>
-                            <button 
+                            <button
                               className="btn btn-ghost btn-sm"
                               style={{ padding: '0.25rem 0.5rem', color: '#059669' }}
                               onClick={() => handleOpenShare(stu)}
@@ -929,7 +929,7 @@ export default function TeacherAdmin({
 
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
-                            <button 
+                            <button
                               className="btn btn-secondary btn-sm"
                               onClick={() => {
                                 setSelectedStudentId(stu.id);
@@ -938,7 +938,7 @@ export default function TeacherAdmin({
                             >
                               Manage
                             </button>
-                            <button 
+                            <button
                               className="btn btn-secondary btn-sm"
                               style={{ color: 'var(--primary)', borderColor: '#c7d2fe', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                               onClick={() => handleOpenEditStudent(stu)}
@@ -946,7 +946,7 @@ export default function TeacherAdmin({
                             >
                               <Edit3 size={14} /> Edit
                             </button>
-                            <button 
+                            <button
                               className="btn btn-ghost btn-sm"
                               style={{ color: 'var(--primary)' }}
                               onClick={() => onViewAsParent(studentPin)}
@@ -954,7 +954,7 @@ export default function TeacherAdmin({
                             >
                               <ExternalLink size={15} />
                             </button>
-                            <button 
+                            <button
                               className="btn btn-ghost btn-sm"
                               style={{ color: '#ef4444' }}
                               onClick={() => handleDeleteStudent(stu.id, stu.fullName)}
@@ -987,7 +987,7 @@ export default function TeacherAdmin({
         <div>
           {/* Breadcrumb Navigation */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <button 
+            <button
               className="btn btn-ghost btn-sm"
               onClick={() => { setSelectedStudentId(null); setAdminView('directory'); }}
             >
@@ -995,20 +995,20 @@ export default function TeacherAdmin({
             </button>
 
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button 
+              <button
                 className="btn btn-secondary btn-sm"
                 onClick={() => handleCopyLink(activeStudent)}
               >
                 <Copy size={15} /> Copy PIN Link
               </button>
-              <button 
+              <button
                 className="btn btn-secondary btn-sm"
                 onClick={() => handleOpenShare(activeStudent)}
                 style={{ color: '#059669' }}
               >
                 <Share2 size={15} /> Share Link
               </button>
-              <button 
+              <button
                 className="btn btn-primary btn-sm"
                 onClick={() => onViewAsParent(activeStudent.pinCode || activeStudent.accessCode)}
               >
@@ -1021,8 +1021,8 @@ export default function TeacherAdmin({
           <div className="card" style={{ background: '#f8fafc', borderLeft: '4px solid var(--primary)', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                <img 
-                  src={activeStudent.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"} 
+                <img
+                  src={activeStudent.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"}
                   alt={activeStudent.fullName}
                   style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }}
                 />
@@ -1041,13 +1041,13 @@ export default function TeacherAdmin({
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <button 
+                <button
                   className="btn btn-secondary btn-sm"
                   onClick={() => handleOpenEditStudent(activeStudent)}
                 >
                   <Edit3 size={15} /> Edit Student Info
                 </button>
-                <button 
+                <button
                   className="btn btn-secondary btn-sm"
                   onClick={() => setShowAddReportModal(true)}
                 >
@@ -1064,7 +1064,7 @@ export default function TeacherAdmin({
                 <Calendar size={20} color="var(--primary)" />
                 Logged Tutoring Sessions ({activeStudent.sessions?.length || 0})
               </h3>
-              <button 
+              <button
                 className="btn btn-primary btn-sm"
                 onClick={handleOpenNewSession}
               >
@@ -1091,16 +1091,16 @@ export default function TeacherAdmin({
                           <Star key={i} size={15} fill="#f59e0b" />
                         ))}
                       </div>
-                      <button 
-                        className="btn btn-ghost btn-sm" 
+                      <button
+                        className="btn btn-ghost btn-sm"
                         style={{ color: 'var(--primary)', padding: '0.3rem' }}
                         onClick={() => handleStartEditSession(ses)}
                         title="Edit Session"
                       >
                         <Edit3 size={16} />
                       </button>
-                      <button 
-                        className="btn btn-ghost btn-sm" 
+                      <button
+                        className="btn btn-ghost btn-sm"
                         style={{ color: '#ef4444', padding: '0.3rem' }}
                         onClick={() => handleDeleteSession(ses.id)}
                         title="Delete Session"
@@ -1144,7 +1144,7 @@ export default function TeacherAdmin({
                 <FileText size={20} color="var(--primary)" />
                 Published Progress Report Cards ({activeStudent.reports?.length || 0})
               </h3>
-              <button 
+              <button
                 className="btn btn-primary btn-sm"
                 onClick={() => setShowAddReportModal(true)}
               >
@@ -1154,8 +1154,8 @@ export default function TeacherAdmin({
 
             {(activeStudent.reports || []).length > 0 ? (
               activeStudent.reports.map((rep) => (
-                <div 
-                  key={rep.id} 
+                <div
+                  key={rep.id}
                   style={{
                     background: '#f8fafc',
                     padding: '1.25rem',
@@ -1177,13 +1177,13 @@ export default function TeacherAdmin({
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
+                    <button
                       className="btn btn-secondary btn-sm"
                       onClick={() => onViewAsParent(activeStudent.pinCode || activeStudent.accessCode)}
                     >
                       <ExternalLink size={14} /> Preview Card
                     </button>
-                    <button 
+                    <button
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDeleteReport(rep.id)}
                     >
@@ -1218,8 +1218,8 @@ export default function TeacherAdmin({
             <form onSubmit={handleAddAnnouncement}>
               <div className="form-group">
                 <label className="form-label">Notice Title</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-input"
                   placeholder="e.g. Mid-Term Review Meeting Schedule"
                   value={newAnnouncement.title}
@@ -1230,7 +1230,7 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Notice Content</label>
-                <textarea 
+                <textarea
                   className="form-textarea"
                   rows="3"
                   placeholder="Message for all parents regarding schedules, center updates, or holiday breaks..."
@@ -1242,7 +1242,7 @@ export default function TeacherAdmin({
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }}>
-                  <input 
+                  <input
                     type="checkbox"
                     checked={newAnnouncement.isPinned}
                     onChange={(e) => setNewAnnouncement({ ...newAnnouncement, isPinned: e.target.checked })}
@@ -1274,7 +1274,7 @@ export default function TeacherAdmin({
                       Posted on {ann.date}
                     </span>
                   </div>
-                  <button 
+                  <button
                     className="btn btn-danger btn-sm"
                     onClick={() => handleDeleteAnnouncement(ann.id)}
                   >
@@ -1318,13 +1318,13 @@ export default function TeacherAdmin({
               flexWrap: 'wrap'
             }}>
               {/* Avatar Preview with Camera Overlay */}
-              <div 
+              <div
                 style={{ position: 'relative', cursor: 'pointer' }}
                 onClick={() => teacherPhotoInputRef.current?.click()}
                 title="Click to choose a photo from your computer/device"
               >
-                <img 
-                  src={centerForm.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'} 
+                <img
+                  src={centerForm.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'}
                   alt="Teacher Profile Preview"
                   style={{
                     width: '84px',
@@ -1357,7 +1357,7 @@ export default function TeacherAdmin({
 
               {/* Upload Controls */}
               <div style={{ flex: 1, minWidth: '240px' }}>
-                <input 
+                <input
                   type="file"
                   ref={teacherPhotoInputRef}
                   accept="image/png,image/jpeg,image/jpg,image/webp"
@@ -1372,16 +1372,16 @@ export default function TeacherAdmin({
                 </p>
 
                 <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="btn btn-primary btn-sm"
                     onClick={() => teacherPhotoInputRef.current?.click()}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, padding: '0.5rem 1rem' }}
                   >
                     <Upload size={15} /> Upload Photo from Device
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="btn btn-secondary btn-sm"
                     onClick={() => {
                       setCenterForm({ ...centerForm, avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80' });
@@ -1391,41 +1391,13 @@ export default function TeacherAdmin({
                     Reset Default
                   </button>
                 </div>
-
-                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>Sample avatars:</span>
-                  <button 
-                    type="button" 
-                    className="btn btn-ghost btn-sm" 
-                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
-                    onClick={() => setCenterForm({ ...centerForm, avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80' })}
-                  >
-                    Educator 1
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-ghost btn-sm" 
-                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
-                    onClick={() => setCenterForm({ ...centerForm, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80' })}
-                  >
-                    Educator 2
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-ghost btn-sm" 
-                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
-                    onClick={() => setCenterForm({ ...centerForm, avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80' })}
-                  >
-                    Educator 3
-                  </button>
-                </div>
               </div>
             </div>
 
             <div className="form-group">
               <label className="form-label">Center / Tutoring Name</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="form-input"
                 value={centerForm.name}
                 onChange={(e) => setCenterForm({ ...centerForm, name: e.target.value })}
@@ -1435,8 +1407,8 @@ export default function TeacherAdmin({
 
             <div className="form-group">
               <label className="form-label">Center Tagline / Motto</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="form-input"
                 value={centerForm.tagline}
                 onChange={(e) => setCenterForm({ ...centerForm, tagline: e.target.value })}
@@ -1446,8 +1418,8 @@ export default function TeacherAdmin({
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label">Teacher Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-input"
                   value={centerForm.tutorName}
                   onChange={(e) => setCenterForm({ ...centerForm, tutorName: e.target.value })}
@@ -1456,8 +1428,8 @@ export default function TeacherAdmin({
               </div>
               <div className="form-group">
                 <label className="form-label">Active Academic Term</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-input"
                   value={centerForm.activeTerm}
                   onChange={(e) => setCenterForm({ ...centerForm, activeTerm: e.target.value })}
@@ -1468,8 +1440,8 @@ export default function TeacherAdmin({
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label">Contact Phone (shown to parents)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-input"
                   value={centerForm.phone}
                   onChange={(e) => setCenterForm({ ...centerForm, phone: e.target.value })}
@@ -1477,8 +1449,8 @@ export default function TeacherAdmin({
               </div>
               <div className="form-group">
                 <label className="form-label">Contact Email</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   className="form-input"
                   value={centerForm.email}
                   onChange={(e) => setCenterForm({ ...centerForm, email: e.target.value })}
@@ -1488,8 +1460,8 @@ export default function TeacherAdmin({
 
             <div className="form-group">
               <label className="form-label">Address / Center Location</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="form-input"
                 value={centerForm.address}
                 onChange={(e) => setCenterForm({ ...centerForm, address: e.target.value })}
@@ -1500,8 +1472,8 @@ export default function TeacherAdmin({
               <label className="form-label" style={{ color: 'var(--primary)' }}>
                 Change Admin Passcode
               </label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 className="form-input"
                 placeholder="Leave blank to keep current passcode (default: 1234)"
                 value={centerForm.passcode}
@@ -1528,8 +1500,8 @@ export default function TeacherAdmin({
                   {editingStudentId ? 'Edit Student Profile' : 'Enroll New Student'}
                 </h3>
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {editingStudentId 
-                    ? `Updating record for ${newStudent.fullName || 'Student'}` 
+                  {editingStudentId
+                    ? `Updating record for ${newStudent.fullName || 'Student'}`
                     : 'Assign a PIN code and learning details'}
                 </span>
               </div>
@@ -1549,13 +1521,13 @@ export default function TeacherAdmin({
                 gap: '1.25rem',
                 flexWrap: 'wrap'
               }}>
-                <div 
+                <div
                   style={{ position: 'relative', cursor: 'pointer' }}
                   onClick={() => studentPhotoInputRef.current?.click()}
                   title="Click to choose a photo for the student"
                 >
-                  <img 
-                    src={newStudent.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"} 
+                  <img
+                    src={newStudent.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"}
                     alt="Student Photo Preview"
                     style={{
                       width: '68px',
@@ -1586,7 +1558,7 @@ export default function TeacherAdmin({
                 </div>
 
                 <div style={{ flex: 1, minWidth: '220px' }}>
-                  <input 
+                  <input
                     type="file"
                     ref={studentPhotoInputRef}
                     accept="image/png,image/jpeg,image/jpg,image/webp"
@@ -1600,8 +1572,8 @@ export default function TeacherAdmin({
                     Upload a picture from your device (JPG, PNG, WEBP).
                   </p>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn btn-primary btn-sm"
                       onClick={() => studentPhotoInputRef.current?.click()}
                       style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}
@@ -1609,8 +1581,8 @@ export default function TeacherAdmin({
                       <Upload size={14} /> Upload Student Photo
                     </button>
                     {newStudent.avatar && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="btn btn-secondary btn-sm"
                         onClick={() => setNewStudent({ ...newStudent, avatar: '' })}
                       >
@@ -1623,8 +1595,8 @@ export default function TeacherAdmin({
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Full Name *</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     placeholder="e.g. Liam Parker"
                     value={newStudent.fullName}
@@ -1634,8 +1606,8 @@ export default function TeacherAdmin({
                 </div>
                 <div className="form-group">
                   <label className="form-label">Preferred Name / Nickname</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     placeholder="e.g. Liam"
                     value={newStudent.preferredName}
@@ -1647,8 +1619,8 @@ export default function TeacherAdmin({
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Grade / Level</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     placeholder="e.g. 5th Grade"
                     value={newStudent.grade}
@@ -1659,8 +1631,8 @@ export default function TeacherAdmin({
                   <label className="form-label" style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <KeyRound size={15} /> Student Access PIN Code *
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     placeholder="e.g. 4829 (4-6 digits)"
                     value={newStudent.pinCode}
@@ -1673,8 +1645,8 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Enrolled Subjects (comma-separated)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-input"
                   placeholder="e.g. Mathematics, Science"
                   value={newStudent.subjects}
@@ -1685,8 +1657,8 @@ export default function TeacherAdmin({
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Parent / Guardian Name *</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     placeholder="e.g. Jessica Parker"
                     value={newStudent.parentName}
@@ -1696,8 +1668,8 @@ export default function TeacherAdmin({
                 </div>
                 <div className="form-group">
                   <label className="form-label">Parent Phone / Contact</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     placeholder="e.g. +1 (555) 234-5678"
                     value={newStudent.parentPhone}
@@ -1708,8 +1680,8 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Parent Email</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   className="form-input"
                   placeholder="e.g. jessica.parker@example.com"
                   value={newStudent.parentEmail}
@@ -1719,7 +1691,7 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Current Academic Focus / Goals</label>
-                <textarea 
+                <textarea
                   className="form-textarea"
                   rows="2"
                   placeholder="e.g. Master multiplication tables, build fraction confidence, and enhance reading fluency."
@@ -1763,8 +1735,8 @@ export default function TeacherAdmin({
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Session Date</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     className="form-input"
                     value={newSession.date}
                     onChange={(e) => setNewSession({ ...newSession, date: e.target.value })}
@@ -1773,7 +1745,7 @@ export default function TeacherAdmin({
                 </div>
                 <div className="form-group">
                   <label className="form-label">Subject</label>
-                  <select 
+                  <select
                     className="form-select"
                     value={newSession.subject}
                     onChange={(e) => setNewSession({ ...newSession, subject: e.target.value })}
@@ -1787,8 +1759,8 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Topic Covered *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-input"
                   placeholder="e.g. Multiplying Fractions with Real-World Word Problems"
                   value={newSession.topic}
@@ -1800,7 +1772,7 @@ export default function TeacherAdmin({
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Attendance</label>
-                  <select 
+                  <select
                     className="form-select"
                     value={newSession.attendance}
                     onChange={(e) => setNewSession({ ...newSession, attendance: e.target.value })}
@@ -1812,7 +1784,7 @@ export default function TeacherAdmin({
                 </div>
                 <div className="form-group">
                   <label className="form-label">Rating</label>
-                  <select 
+                  <select
                     className="form-select"
                     value={newSession.rating}
                     onChange={(e) => setNewSession({ ...newSession, rating: Number(e.target.value) })}
@@ -1826,7 +1798,7 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Tutor Observations & Remarks *</label>
-                <textarea 
+                <textarea
                   className="form-textarea"
                   rows="3"
                   value={newSession.tutorNotes}
@@ -1838,8 +1810,8 @@ export default function TeacherAdmin({
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Homework Status</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     value={newSession.homework}
                     onChange={(e) => setNewSession({ ...newSession, homework: e.target.value })}
@@ -1847,8 +1819,8 @@ export default function TeacherAdmin({
                 </div>
                 <div className="form-group">
                   <label className="form-label">Next Lesson Plan</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     value={newSession.nextSteps}
                     onChange={(e) => setNewSession({ ...newSession, nextSteps: e.target.value })}
@@ -1891,8 +1863,8 @@ export default function TeacherAdmin({
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Report Title</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     value={newReport.title}
                     onChange={(e) => setNewReport({ ...newReport, title: e.target.value })}
@@ -1901,8 +1873,8 @@ export default function TeacherAdmin({
                 </div>
                 <div className="form-group">
                   <label className="form-label">Evaluation Period</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     value={newReport.period}
                     onChange={(e) => setNewReport({ ...newReport, period: e.target.value })}
@@ -1913,8 +1885,8 @@ export default function TeacherAdmin({
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Overall Grade Rating</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     value={newReport.overallGrade}
                     onChange={(e) => setNewReport({ ...newReport, overallGrade: e.target.value })}
@@ -1922,8 +1894,8 @@ export default function TeacherAdmin({
                 </div>
                 <div className="form-group">
                   <label className="form-label">Attendance Record</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     value={newReport.attendanceRate}
                     onChange={(e) => setNewReport({ ...newReport, attendanceRate: e.target.value })}
@@ -1933,7 +1905,7 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Key Strengths (one per line)</label>
-                <textarea 
+                <textarea
                   className="form-textarea"
                   rows="3"
                   value={newReport.strengths}
@@ -1943,7 +1915,7 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Areas for Growth / Goals (one per line)</label>
-                <textarea 
+                <textarea
                   className="form-textarea"
                   rows="2"
                   value={newReport.areasForGrowth}
@@ -1953,7 +1925,7 @@ export default function TeacherAdmin({
 
               <div className="form-group">
                 <label className="form-label">Lead Tutor's Comprehensive Summary</label>
-                <textarea 
+                <textarea
                   className="form-textarea"
                   rows="3"
                   value={newReport.tutorSummary}
@@ -2013,7 +1985,7 @@ export default function TeacherAdmin({
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button 
+              <button
                 className="btn btn-secondary"
                 onClick={() => {
                   const pin = shareStudent.pinCode || shareStudent.accessCode;
@@ -2024,7 +1996,7 @@ export default function TeacherAdmin({
               >
                 <Copy size={16} /> Copy Direct Link
               </button>
-              <button 
+              <button
                 className="btn btn-primary"
                 onClick={() => {
                   const pin = shareStudent.pinCode || shareStudent.accessCode;
