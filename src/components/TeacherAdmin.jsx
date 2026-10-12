@@ -48,6 +48,7 @@ export default function TeacherAdmin({
 
   // Modals
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState(null);
   const [showAddSessionModal, setShowAddSessionModal] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [showAddReportModal, setShowAddReportModal] = useState(false);
@@ -182,18 +183,67 @@ export default function TeacherAdmin({
     setShowShareModal(true);
   };
 
-  // Add Student Handler
-  const handleAddStudent = async (e) => {
+  // Open New Student Modal
+  const handleOpenNewStudent = () => {
+    setEditingStudentId(null);
+    const autoPin = String(Math.floor(1000 + Math.random() * 9000));
+    setNewStudent({
+      fullName: '',
+      preferredName: '',
+      grade: '5th Grade',
+      subjects: 'Mathematics, Science',
+      parentName: '',
+      parentPhone: '',
+      parentEmail: '',
+      learningGoals: '',
+      avatar: '',
+      pinCode: autoPin
+    });
+    setShowAddStudentModal(true);
+  };
+
+  // Open Edit Student Modal
+  const handleOpenEditStudent = (stu) => {
+    setEditingStudentId(stu.id);
+    setNewStudent({
+      fullName: stu.fullName || '',
+      preferredName: stu.preferredName || '',
+      grade: stu.grade || '',
+      subjects: Array.isArray(stu.subjects) ? stu.subjects.join(', ') : (stu.subjects || ''),
+      parentName: stu.parentName || '',
+      parentPhone: stu.parentPhone || '',
+      parentEmail: stu.parentEmail || '',
+      learningGoals: stu.learningGoals || '',
+      avatar: stu.avatar || '',
+      pinCode: stu.pinCode || stu.accessCode || ''
+    });
+    setShowAddStudentModal(true);
+  };
+
+  // Close Student Modal
+  const handleCloseStudentModal = () => {
+    setShowAddStudentModal(false);
+    setEditingStudentId(null);
+  };
+
+  // Save Student (Add or Edit) Handler
+  const handleSaveStudent = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/students', {
-        method: 'POST',
+      const url = editingStudentId 
+        ? `/api/students/${editingStudentId}`
+        : '/api/students';
+      const method = editingStudentId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newStudent)
       });
       const data = await res.json();
       if (data.success) {
         setShowAddStudentModal(false);
+        setEditingStudentId(null);
         setNewStudent({
           fullName: '',
           preferredName: '',
@@ -207,16 +257,25 @@ export default function TeacherAdmin({
           pinCode: ''
         });
         onRefreshData();
-        const pin = data.student.pinCode || data.student.accessCode;
+        const pin = data.student?.pinCode || data.student?.accessCode || newStudent.pinCode;
         onShowToast({
           type: 'success',
-          message: `Enrolled ${data.student.fullName} with Student PIN: ${pin}`
+          message: editingStudentId 
+            ? `Updated student profile for ${newStudent.fullName}!` 
+            : `Enrolled ${data.student?.fullName || newStudent.fullName} with Student PIN: ${pin}`
         });
-        setSelectedStudentId(data.student.id);
-        setAdminView('student-detail');
+        if (!editingStudentId && data.student) {
+          setSelectedStudentId(data.student.id);
+          setAdminView('student-detail');
+        }
+      } else {
+        onShowToast({ type: 'error', message: data.message || 'Error saving student' });
       }
     } catch (err) {
-      onShowToast({ type: 'error', message: 'Failed to create student' });
+      onShowToast({ 
+        type: 'error', 
+        message: editingStudentId ? 'Failed to update student profile' : 'Failed to create student' 
+      });
     }
   };
 
@@ -683,11 +742,7 @@ export default function TeacherAdmin({
 
             <button 
               className="btn btn-primary"
-              onClick={() => {
-                const autoPin = String(Math.floor(1000 + Math.random() * 9000));
-                setNewStudent(prev => ({ ...prev, pinCode: autoPin }));
-                setShowAddStudentModal(true);
-              }}
+              onClick={handleOpenNewStudent}
             >
               <Plus size={18} /> Add New Student
             </button>
@@ -717,10 +772,29 @@ export default function TeacherAdmin({
                             <img 
                               src={stu.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"} 
                               alt={stu.fullName}
-                              style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                              style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
+                              onClick={() => handleOpenEditStudent(stu)}
+                              title="Click to edit student info"
                             />
                             <div>
-                              <strong style={{ display: 'block', fontSize: '0.95rem' }}>{stu.fullName}</strong>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <strong 
+                                  style={{ fontSize: '0.95rem', cursor: 'pointer', color: 'var(--text-main)' }}
+                                  onClick={() => handleOpenEditStudent(stu)}
+                                  title="Click to edit student info"
+                                >
+                                  {stu.fullName}
+                                </strong>
+                                <button 
+                                  type="button"
+                                  className="btn btn-ghost btn-sm"
+                                  style={{ padding: '0.15rem 0.35rem', color: 'var(--primary)' }}
+                                  onClick={() => handleOpenEditStudent(stu)}
+                                  title="Edit student info"
+                                >
+                                  <Edit3 size={13} />
+                                </button>
+                              </div>
                               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                 Enrolled {stu.enrolledDate}
                               </span>
@@ -785,6 +859,14 @@ export default function TeacherAdmin({
                               }}
                             >
                               Manage
+                            </button>
+                            <button 
+                              className="btn btn-secondary btn-sm"
+                              style={{ color: 'var(--primary)', borderColor: '#c7d2fe', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                              onClick={() => handleOpenEditStudent(stu)}
+                              title="Edit Student Info"
+                            >
+                              <Edit3 size={14} /> Edit
                             </button>
                             <button 
                               className="btn btn-ghost btn-sm"
@@ -881,6 +963,12 @@ export default function TeacherAdmin({
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <button 
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => handleOpenEditStudent(activeStudent)}
+                >
+                  <Edit3 size={15} /> Edit Student Info
+                </button>
                 <button 
                   className="btn btn-secondary btn-sm"
                   onClick={() => setShowAddReportModal(true)}
@@ -1234,17 +1322,26 @@ export default function TeacherAdmin({
       )}
 
       {/* =========================================================
-          MODAL: ADD NEW STUDENT (WITH PIN CODE)
+          MODAL: ADD / EDIT STUDENT (WITH PIN CODE)
           ========================================================= */}
       {showAddStudentModal && (
-        <div className="modal-overlay" onClick={() => setShowAddStudentModal(false)}>
+        <div className="modal-overlay" onClick={handleCloseStudentModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 style={{ fontSize: '1.3rem' }}>Enroll New Student</h3>
-              <button className="btn btn-ghost" onClick={() => setShowAddStudentModal(false)}>✕</button>
+              <div>
+                <h3 style={{ fontSize: '1.3rem' }}>
+                  {editingStudentId ? 'Edit Student Profile' : 'Enroll New Student'}
+                </h3>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {editingStudentId 
+                    ? `Updating record for ${newStudent.fullName || 'Student'}` 
+                    : 'Assign a PIN code and learning details'}
+                </span>
+              </div>
+              <button className="btn btn-ghost" onClick={handleCloseStudentModal}>✕</button>
             </div>
 
-            <form onSubmit={handleAddStudent}>
+            <form onSubmit={handleSaveStudent}>
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Full Name *</label>
@@ -1258,6 +1355,19 @@ export default function TeacherAdmin({
                   />
                 </div>
                 <div className="form-group">
+                  <label className="form-label">Preferred Name / Nickname</label>
+                  <input 
+                    type="text" 
+                    className="form-input"
+                    placeholder="e.g. Liam"
+                    value={newStudent.preferredName}
+                    onChange={(e) => setNewStudent({ ...newStudent, preferredName: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
                   <label className="form-label">Grade / Level</label>
                   <input 
                     type="text" 
@@ -1265,19 +1375,6 @@ export default function TeacherAdmin({
                     placeholder="e.g. 5th Grade"
                     value={newStudent.grade}
                     onChange={(e) => setNewStudent({ ...newStudent, grade: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Enrolled Subjects (comma-separated)</label>
-                  <input 
-                    type="text" 
-                    className="form-input"
-                    placeholder="e.g. Mathematics, Science"
-                    value={newStudent.subjects}
-                    onChange={(e) => setNewStudent({ ...newStudent, subjects: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
@@ -1294,6 +1391,17 @@ export default function TeacherAdmin({
                     style={{ fontWeight: 700, letterSpacing: '0.08em' }}
                   />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Enrolled Subjects (comma-separated)</label>
+                <input 
+                  type="text" 
+                  className="form-input"
+                  placeholder="e.g. Mathematics, Science"
+                  value={newStudent.subjects}
+                  onChange={(e) => setNewStudent({ ...newStudent, subjects: e.target.value })}
+                />
               </div>
 
               <div className="form-row">
@@ -1321,6 +1429,17 @@ export default function TeacherAdmin({
               </div>
 
               <div className="form-group">
+                <label className="form-label">Parent Email</label>
+                <input 
+                  type="email" 
+                  className="form-input"
+                  placeholder="e.g. jessica.parker@example.com"
+                  value={newStudent.parentEmail}
+                  onChange={(e) => setNewStudent({ ...newStudent, parentEmail: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
                 <label className="form-label">Current Academic Focus / Goals</label>
                 <textarea 
                   className="form-textarea"
@@ -1332,11 +1451,11 @@ export default function TeacherAdmin({
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setShowAddStudentModal(false)}>
+                <button type="button" className="btn btn-secondary" onClick={handleCloseStudentModal}>
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Enroll Student & Set PIN Code
+                  {editingStudentId ? 'Save Changes' : 'Enroll Student & Set PIN Code'}
                 </button>
               </div>
             </form>

@@ -352,33 +352,68 @@ export async function createStudent(studentData) {
 export async function updateStudent(id, studentData) {
   if (isSupabaseConfigured) {
     const payload = {};
-    if (studentData.fullName) payload.full_name = studentData.fullName;
-    if (studentData.preferredName) payload.preferred_name = studentData.preferredName;
-    if (studentData.grade) payload.grade = studentData.grade;
-    if (studentData.subjects) payload.subjects = studentData.subjects;
-    if (studentData.parentName) payload.parent_name = studentData.parentName;
-    if (studentData.parentPhone) payload.parent_phone = studentData.parentPhone;
-    if (studentData.parentEmail) payload.parent_email = studentData.parentEmail;
-    if (studentData.status) payload.status = studentData.status;
-    if (studentData.learningGoals) payload.learning_goals = studentData.learningGoals;
+    if (studentData.fullName) payload.full_name = studentData.fullName.trim();
+    if (studentData.preferredName !== undefined) payload.preferred_name = studentData.preferredName.trim();
+    if (studentData.grade !== undefined) payload.grade = studentData.grade;
+    if (studentData.subjects !== undefined) {
+      payload.subjects = Array.isArray(studentData.subjects)
+        ? studentData.subjects
+        : (typeof studentData.subjects === 'string' ? studentData.subjects.split(',').map(s => s.trim()).filter(Boolean) : studentData.subjects);
+    }
+    if (studentData.parentName !== undefined) payload.parent_name = studentData.parentName;
+    if (studentData.parentPhone !== undefined) payload.parent_phone = studentData.parentPhone;
+    if (studentData.parentEmail !== undefined) payload.parent_email = studentData.parentEmail;
+    if (studentData.status !== undefined) payload.status = studentData.status;
+    if (studentData.learningGoals !== undefined) payload.learning_goals = studentData.learningGoals;
+    if (studentData.avatar !== undefined) payload.avatar = studentData.avatar;
     if (studentData.pinCode) {
-      payload.pin_code = studentData.pinCode;
-      payload.access_code = studentData.pinCode;
+      payload.pin_code = studentData.pinCode.trim();
+      payload.access_code = studentData.pinCode.trim();
     }
 
-    const { data, error } = await supabase.from('students').update(payload).eq('id', id).select().single();
+    const { data, error } = await supabase.from('students').update(payload).eq('id', id).select();
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) return null;
+    const row = data[0];
+    const updatedStudent = {
+      ...row,
+      pinCode: row.pin_code,
+      accessCode: row.access_code,
+      fullName: row.full_name,
+      preferredName: row.preferred_name,
+      parentName: row.parent_name,
+      parentPhone: row.parent_phone,
+      parentEmail: row.parent_email,
+      enrolledDate: row.enrolled_date,
+      learningGoals: row.learning_goals
+    };
+
+    // Keep local store.json synchronized
+    try {
+      const localData = loadLocalData();
+      const sIdx = (localData.students || []).findIndex(s => s.id === id);
+      if (sIdx !== -1) {
+        localData.students[sIdx] = { ...localData.students[sIdx], ...updatedStudent };
+        saveLocalData(localData);
+      }
+    } catch (_) {}
+
+    return updatedStudent;
   }
 
   const data = loadLocalData();
   const idx = data.students.findIndex(s => s.id === id);
   if (idx === -1) return null;
 
+  const subjects = studentData.subjects !== undefined
+    ? (Array.isArray(studentData.subjects) ? studentData.subjects : (typeof studentData.subjects === 'string' ? studentData.subjects.split(',').map(s => s.trim()).filter(Boolean) : studentData.subjects))
+    : data.students[idx].subjects;
+
   const updatedPin = studentData.pinCode || studentData.accessCode || data.students[idx].pinCode;
   data.students[idx] = {
     ...data.students[idx],
     ...studentData,
+    subjects,
     pinCode: updatedPin,
     accessCode: updatedPin,
     id: data.students[idx].id
