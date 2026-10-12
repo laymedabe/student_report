@@ -36,6 +36,7 @@ export default function TeacherAdmin({
   onExitAdmin 
 }) {
   const teacherPhotoInputRef = useRef(null);
+  const studentPhotoInputRef = useRef(null);
 
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -503,6 +504,35 @@ export default function TeacherAdmin({
     reader.readAsDataURL(file);
   };
 
+  // Handle Student Photo File Upload from Device
+  const handleStudentPhotoFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      onShowToast({ type: 'error', message: 'Student photo must be under 10MB' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target.result;
+      setNewStudent(prev => ({ ...prev, avatar: dataUrl }));
+      onShowToast({ type: 'success', message: 'Student photo loaded!' });
+
+      try {
+        const formData = new FormData();
+        formData.append('photo', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success && data.url) {
+          setNewStudent(prev => ({ ...prev, avatar: data.url }));
+        }
+      } catch (_) {}
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Update Center Settings
   const handleUpdateCenter = async (e) => {
     e.preventDefault();
@@ -837,29 +867,12 @@ export default function TeacherAdmin({
                             <img 
                               src={stu.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"} 
                               alt={stu.fullName}
-                              style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
-                              onClick={() => handleOpenEditStudent(stu)}
-                              title="Click to edit student info"
+                              style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
                             />
                             <div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                                <strong 
-                                  style={{ fontSize: '0.95rem', cursor: 'pointer', color: 'var(--text-main)' }}
-                                  onClick={() => handleOpenEditStudent(stu)}
-                                  title="Click to edit student info"
-                                >
-                                  {stu.fullName}
-                                </strong>
-                                <button 
-                                  type="button"
-                                  className="btn btn-ghost btn-sm"
-                                  style={{ padding: '0.15rem 0.35rem', color: 'var(--primary)' }}
-                                  onClick={() => handleOpenEditStudent(stu)}
-                                  title="Edit student info"
-                                >
-                                  <Edit3 size={13} />
-                                </button>
-                              </div>
+                              <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                                {stu.fullName}
+                              </strong>
                               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                 Enrolled {stu.enrolledDate}
                               </span>
@@ -1524,6 +1537,89 @@ export default function TeacherAdmin({
             </div>
 
             <form onSubmit={handleSaveStudent}>
+              {/* Student Photo Upload Section */}
+              <div style={{
+                background: '#f8fafc',
+                padding: '1.25rem',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-light)',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1.25rem',
+                flexWrap: 'wrap'
+              }}>
+                <div 
+                  style={{ position: 'relative', cursor: 'pointer' }}
+                  onClick={() => studentPhotoInputRef.current?.click()}
+                  title="Click to choose a photo for the student"
+                >
+                  <img 
+                    src={newStudent.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"} 
+                    alt="Student Photo Preview"
+                    style={{
+                      width: '68px',
+                      height: '68px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '3px solid var(--primary)',
+                      boxShadow: '0 3px 10px rgba(79, 70, 229, 0.2)',
+                      display: 'block'
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '0px',
+                    right: '0px',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '2px solid white'
+                  }}>
+                    <Camera size={12} />
+                  </div>
+                </div>
+
+                <div style={{ flex: 1, minWidth: '220px' }}>
+                  <input 
+                    type="file"
+                    ref={studentPhotoInputRef}
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    style={{ display: 'none' }}
+                    onChange={handleStudentPhotoFileChange}
+                  />
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: '0.2rem' }}>
+                    Student Photo
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, marginBottom: '0.6rem' }}>
+                    Upload a picture from your device (JPG, PNG, WEBP).
+                  </p>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button 
+                      type="button" 
+                      className="btn btn-primary btn-sm"
+                      onClick={() => studentPhotoInputRef.current?.click()}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}
+                    >
+                      <Upload size={14} /> Upload Student Photo
+                    </button>
+                    {newStudent.avatar && (
+                      <button 
+                        type="button" 
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => setNewStudent({ ...newStudent, avatar: '' })}
+                      >
+                        Reset Default
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Full Name *</label>
