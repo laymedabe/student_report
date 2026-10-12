@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { 
-  GraduationCap, 
   ArrowRight, 
   ShieldCheck, 
-  Sparkles, 
   FileText, 
   CheckCircle,
-  Lock,
   KeyRound
 } from 'lucide-react';
 
-export default function ParentAccess({ onAccessSubmit, onSwitchToTeacher, centerInfo, errorMsg }) {
+export default function ParentAccess({ onAccessSubmit, centerInfo, errorMsg }) {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,53 +19,14 @@ export default function ParentAccess({ onAccessSubmit, onSwitchToTeacher, center
     setTimeout(() => setLoading(false), 400);
   };
 
-  const handleQuickDemo = (demoPin) => {
-    setPin(demoPin);
-    onAccessSubmit(demoPin);
-  };
-
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: 'calc(100vh - 72px)',
       display: 'flex',
       flexDirection: 'column',
       background: 'radial-gradient(circle at top right, #e0e7ff 0%, #f8fafc 50%, #f1f5f9 100%)',
-      padding: '1.5rem'
+      padding: '2rem 1.5rem'
     }}>
-      {/* Top Header */}
-      <header style={{
-        maxWidth: '1100px',
-        margin: '0 auto',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '1rem 0'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div className="brand-icon">
-            <GraduationCap size={22} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.15rem', margin: 0, fontWeight: 700 }}>
-              {centerInfo?.name || 'Apex Scholars Learning Center'}
-            </h2>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Parent & Student Communication Hub
-            </p>
-          </div>
-        </div>
-
-        <button 
-          className="btn btn-secondary btn-sm"
-          onClick={onSwitchToTeacher}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-        >
-          <Lock size={14} />
-          Teacher Admin
-        </button>
-      </header>
-
       {/* Main Content Card */}
       <main style={{
         flex: 1,
@@ -76,7 +34,7 @@ export default function ParentAccess({ onAccessSubmit, onSwitchToTeacher, center
         alignItems: 'center',
         justifyContent: 'center',
         maxWidth: '560px',
-        margin: '2rem auto',
+        margin: '1rem auto',
         width: '100%'
       }}>
         <div style={{
@@ -123,7 +81,7 @@ export default function ParentAccess({ onAccessSubmit, onSwitchToTeacher, center
             maxWidth: '440px',
             marginInline: 'auto'
           }}>
-            No Google Drive permissions or complicated account logins. Simply enter your child's 4-digit Student PIN provided by the tutor.
+            Enter your child's 4-digit Student PIN provided by the tutor.
           </p>
 
           {/* Form */}
@@ -189,54 +147,6 @@ export default function ParentAccess({ onAccessSubmit, onSwitchToTeacher, center
               )}
             </button>
           </form>
-
-          {/* Quick Demo Student PIN Buttons */}
-          <div style={{
-            background: '#f8fafc',
-            borderRadius: 'var(--radius-md)',
-            padding: '1.25rem',
-            border: '1px solid var(--border-light)',
-            marginBottom: '1.5rem',
-            textAlign: 'left'
-          }}>
-            <span style={{
-              display: 'block',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              marginBottom: '0.75rem'
-            }}>
-              Quick Demo Student PINs (Click to test):
-            </span>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button 
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => handleQuickDemo('9421')}
-                style={{ fontSize: '0.8rem', fontWeight: 600 }}
-              >
-                PIN: <strong>9421</strong> (Lucas - Grade 5) 🌟
-              </button>
-              <button 
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => handleQuickDemo('3108')}
-                style={{ fontSize: '0.8rem', fontWeight: 600 }}
-              >
-                PIN: <strong>3108</strong> (Maya - Grade 7) 📐
-              </button>
-              <button 
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => handleQuickDemo('5812')}
-                style={{ fontSize: '0.8rem', fontWeight: 600 }}
-              >
-                PIN: <strong>5812</strong> (Ethan - Grade 3) 🚀
-              </button>
-            </div>
-          </div>
 
           {/* Value Props */}
           <div style={{

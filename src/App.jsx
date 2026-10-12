@@ -184,7 +184,6 @@ export default function App() {
           ) : (
             <ParentAccess 
               onAccessSubmit={handleAccessSubmit}
-              onSwitchToTeacher={() => handleSwitchMode('teacher')}
               centerInfo={center}
               errorMsg={accessError}
             />
