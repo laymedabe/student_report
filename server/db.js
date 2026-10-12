@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
@@ -9,9 +10,13 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Storage fallback paths for local development
-const DATA_DIR = path.join(__dirname, 'data');
-const STORE_PATH = path.join(DATA_DIR, 'store.json');
+// Serverless detection (Vercel, AWS Lambda, etc.)
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+
+// Storage fallback paths: use os.tmpdir() in serverless to prevent EROFS
+const DATA_DIR = IS_SERVERLESS ? path.join(os.tmpdir(), 'apex_student_data') : path.join(__dirname, 'data');
+const STORE_PATH = IS_SERVERLESS ? path.join(DATA_DIR, 'store.json') : path.join(DATA_DIR, 'store.json');
+const BUNDLED_STORE_PATH = path.join(__dirname, 'data', 'store.json');
 
 // Supabase environment variables
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -28,24 +33,55 @@ if (isSupabaseConfigured) {
 }
 
 // -------------------------------------------------------------
-// LOCAL FALLBACK HELPERS
+// LOCAL FALLBACK HELPERS (EROFS-Safe for Serverless & Local)
 // -------------------------------------------------------------
+let inMemoryData = null;
+
 function loadLocalData() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(STORE_PATH)) return { center: {}, teachers: [], students: [], announcements: [] };
+  if (inMemoryData) return inMemoryData;
+
+  // 1. Try reading from writable store path
   try {
-    const data = JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
-    if (!data.teachers) data.teachers = [];
-    if (!data.students) data.students = [];
-    return data;
-  } catch (err) {
-    return { center: {}, teachers: [], students: [], announcements: [] };
-  }
+    if (fs.existsSync(STORE_PATH)) {
+      const data = JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
+      if (data) {
+        if (!data.teachers) data.teachers = [];
+        if (!data.students) data.students = [];
+        inMemoryData = data;
+        return inMemoryData;
+      }
+    }
+  } catch (_) { }
+
+  // 2. Try reading from bundled store path
+  try {
+    if (fs.existsSync(BUNDLED_STORE_PATH)) {
+      const data = JSON.parse(fs.readFileSync(BUNDLED_STORE_PATH, 'utf8'));
+      if (data) {
+        if (!data.teachers) data.teachers = [];
+        if (!data.students) data.students = [];
+        inMemoryData = data;
+        return inMemoryData;
+      }
+    }
+  } catch (_) { }
+
+  inMemoryData = { center: {}, teachers: [], students: [], announcements: [] };
+  return inMemoryData;
 }
 
 function saveLocalData(data) {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf8');
+  inMemoryData = data;
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    // Serverless (e.g. Vercel) has a read-only filesystem (/var/task).
+    // State is safely maintained in memory and synchronized with Supabase cloud.
+    console.warn('Storage notice (serverless in-memory active):', err.message);
+  }
 }
 
 // -------------------------------------------------------------

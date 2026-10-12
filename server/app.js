@@ -3,6 +3,7 @@ import cors from 'cors';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import * as db from './db.js';
 
@@ -11,12 +12,22 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Uploads directory (note: ephemeral on serverless, but works locally)
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+// Serverless detection
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+
+// Uploads directory: in serverless (like Vercel), only os.tmpdir() is writable
+const UPLOADS_DIR = IS_SERVERLESS ? path.join(os.tmpdir(), 'apex_uploads') : path.join(__dirname, 'uploads');
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+} catch (_) { }
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  destination: (req, file, cb) => {
+    try {
+      if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    } catch (_) { }
+    cb(null, UPLOADS_DIR);
+  },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname) || '.jpg';
     cb(null, 'file-' + Date.now() + '-' + Math.round(Math.random() * 1e9) + ext);
