@@ -17,13 +17,13 @@ export default function Navbar({
           style={{ cursor: 'pointer' }}
         >
           <div className="brand-icon">
-            <GraduationCap size={22} />
+            <GraduationCap size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.1 }}>
+            <div className="brand-title">
               {centerName || 'Apex Scholars'}
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+            <div className="brand-subtitle">
               Learning & Tutorial Hub
             </div>
           </div>
@@ -33,23 +33,23 @@ export default function Navbar({
         <div className="nav-actions">
           {currentMode === 'parent' ? (
             <button 
-              className="btn btn-secondary"
+              className="btn btn-secondary nav-mode-btn"
               onClick={() => onSwitchMode('teacher')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, minHeight: '44px', padding: '0.55rem 1rem', fontSize: '0.9rem' }}
               aria-label="Switch to Teacher Admin Mode"
             >
-              <ShieldCheck size={18} color="var(--primary)" />
-              <span>Teacher Admin</span>
+              <ShieldCheck size={16} color="var(--primary)" />
+              <span className="nav-btn-text-full">Teacher Admin</span>
+              <span className="nav-btn-text-mobile">Teacher</span>
             </button>
           ) : (
             <button 
-              className="btn btn-primary"
+              className="btn btn-primary nav-mode-btn"
               onClick={() => onSwitchMode('parent')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, minHeight: '44px', padding: '0.55rem 1rem', fontSize: '0.9rem' }}
               aria-label="Switch to Parent Portal View"
             >
-              <UserCheck size={18} />
-              <span>Parent Portal View</span>
+              <UserCheck size={16} />
+              <span className="nav-btn-text-full">Parent Portal View</span>
+              <span className="nav-btn-text-mobile">Parent View</span>
             </button>
           )}
         </div>

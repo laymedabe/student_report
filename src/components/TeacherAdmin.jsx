@@ -672,60 +672,28 @@ export default function TeacherAdmin({
   // -------------------------------------------------------------
   if (!isAuthenticated) {
     return (
-      <div style={{
-        minHeight: '90vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-        background: 'radial-gradient(circle at top right, #e0e7ff 0%, #f8fafc 60%)'
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: 'var(--radius-xl)',
-          padding: '2.5rem',
-          maxWidth: '480px',
-          width: '100%',
-          boxShadow: 'var(--shadow-xl)',
-          border: '1px solid var(--border-light)'
-        }}>
+      <div className="auth-screen-container">
+        <div className="auth-screen-card">
           {/* Header Icon */}
-          <div style={{
-            width: '54px',
-            height: '54px',
-            borderRadius: 'var(--radius-lg)',
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%)',
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 1.25rem'
-          }}>
-            {authTab === 'login' ? <Lock size={26} /> : <UserPlus size={26} />}
+          <div className="auth-icon-badge">
+            {authTab === 'login' ? <Lock size={24} /> : <UserPlus size={24} />}
           </div>
 
-          <h2 style={{ fontSize: '1.6rem', marginBottom: '0.35rem', textAlign: 'center' }}>
+          <h2 className="auth-title">
             {authTab === 'login' ? 'Teacher Admin Sign In' : 'Create Teacher Account'}
           </h2>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.5rem', textAlign: 'center' }}>
+          <p className="auth-subtitle">
             {authTab === 'login'
               ? 'Sign in to access and manage your dedicated student roster.'
               : 'Register your educator profile to start managing your own students.'}
           </p>
 
           {/* Tab Switcher */}
-          <div style={{
-            display: 'flex',
-            background: '#f1f5f9',
-            padding: '4px',
-            borderRadius: 'var(--radius-md)',
-            marginBottom: '1.75rem',
-            gap: '4px'
-          }}>
+          <div className="auth-tabs">
             <button
               type="button"
               className={`btn btn-sm ${authTab === 'login' ? 'btn-primary' : 'btn-ghost'}`}
-              style={{ flex: 1, fontWeight: 600 }}
+              style={{ flex: 1, fontWeight: 700, minHeight: '38px' }}
               onClick={() => { setAuthTab('login'); setAuthError(''); }}
             >
               <LogIn size={15} /> Sign In
@@ -733,7 +701,7 @@ export default function TeacherAdmin({
             <button
               type="button"
               className={`btn btn-sm ${authTab === 'register' ? 'btn-primary' : 'btn-ghost'}`}
-              style={{ flex: 1, fontWeight: 600 }}
+              style={{ flex: 1, fontWeight: 700, minHeight: '38px' }}
               onClick={() => { setAuthTab('register'); setAuthError(''); }}
             >
               <UserPlus size={15} /> Create Account
@@ -743,33 +711,31 @@ export default function TeacherAdmin({
           {/* TAB 1: LOGIN */}
           {authTab === 'login' ? (
             <form onSubmit={handleLogin}>
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+              <div className="auth-form-group">
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.35rem' }}>
                   Teacher Email:
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type="email"
-                    placeholder="Enter your email (e.g. sample@email.com)"
+                    placeholder="e.g. sample@email.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
+                    className="form-input"
                     style={{
-                      width: '100%',
-                      padding: '0.8rem 1rem 0.8rem 2.4rem',
-                      fontSize: '0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-strong)',
-                      outline: 'none'
+                      paddingLeft: '2.5rem',
+                      fontSize: '16px',
+                      minHeight: '48px'
                     }}
                     required
                     autoFocus
                   />
-                  <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <Mail size={17} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+              <div className="auth-form-group">
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.35rem' }}>
                   Personal Passcode (PIN):
                 </label>
                 <div style={{ position: 'relative' }}>
@@ -777,33 +743,35 @@ export default function TeacherAdmin({
                     type="password"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    placeholder="Enter your 4-digit passcode"
+                    placeholder="e.g. 1234 (4 digits)"
                     value={loginPasscode}
                     onChange={(e) => setLoginPasscode(e.target.value)}
+                    className="form-input"
                     style={{
-                      width: '100%',
-                      padding: '0.8rem 1rem 0.8rem 2.4rem',
+                      paddingLeft: '2.5rem',
                       fontSize: '16px',
                       minHeight: '48px',
-                      borderRadius: 'var(--radius-md)',
-                      border: authError ? '2px solid #ef4444' : '1.5px solid var(--border-strong)',
-                      outline: 'none',
+                      border: authError ? '2px solid #ef4444' : undefined,
                       letterSpacing: '0.12em'
                     }}
                     required
                   />
-                  <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <KeyRound size={17} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
                 </div>
               </div>
 
               {authError && (
-                <div style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600 }}>
-                  {authError}
+                <div style={{ color: '#b91c1c', fontSize: '0.875rem', marginBottom: '0.85rem', fontWeight: 700, background: '#fef2f2', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)' }}>
+                  ⚠️ {authError}
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
-                Sign In to Teacher Dashboard
+              <button 
+                type="submit" 
+                className="btn btn-primary auth-submit-btn" 
+                style={{ width: '100%', minHeight: '48px', fontWeight: 700, fontSize: '1rem', marginBottom: '0.75rem' }}
+              >
+                Sign In to Dashboard
               </button>
             </form>
           ) : (
@@ -945,7 +913,11 @@ export default function TeacherAdmin({
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
+              <button 
+                type="submit" 
+                className="btn btn-primary auth-submit-btn" 
+                style={{ width: '100%', minHeight: '48px', fontWeight: 700, fontSize: '1rem', marginBottom: '0.75rem' }}
+              >
                 Create Teacher Account
               </button>
             </form>
@@ -953,11 +925,11 @@ export default function TeacherAdmin({
 
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
+            className="btn btn-ghost"
             onClick={onExitAdmin}
-            style={{ width: '100%' }}
+            style={{ width: '100%', minHeight: '42px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}
           >
-            ← Back to Parent Access Portal
+            ← Back to Parent Access
           </button>
         </div>
       </div>
