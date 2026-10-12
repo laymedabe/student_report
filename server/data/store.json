@@ -32,45 +32,6 @@
       "learningGoals": "Master complex fraction arithmetic, strengthen multi-step word problem synthesis, and refine reading inference skills.",
       "sessions": [
         {
-          "id": "ses-101-1",
-          "date": "2026-10-09",
-          "subject": "Mathematics",
-          "topic": "Multiplying & Dividing Fractions with Real-World Word Problems",
-          "duration": "60 mins",
-          "attendance": "Present",
-          "rating": 5,
-          "badge": "Star Problem Solver",
-          "tutorNotes": "Outstanding breakthrough session! Lucas solved all 7 multi-step word problems completely without coaching. He even caught an edge case in problem #4 on his own.",
-          "homework": "Completed - 100% Score",
-          "nextSteps": "Begin mixed numbers and decimal conversion next Tuesday."
-        },
-        {
-          "id": "ses-101-2",
-          "date": "2026-10-06",
-          "subject": "Science & Discovery",
-          "topic": "Ecosystem Energy Pyramids & Food Web Dynamics",
-          "duration": "60 mins",
-          "attendance": "Present",
-          "rating": 5,
-          "badge": "Deep Thinker",
-          "tutorNotes": "Lucas showed remarkable engagement during our food web flow simulation. He grasped trophic levels and trophic cascade effects very fast.",
-          "homework": "Completed with Diagram",
-          "nextSteps": "Prepare short 3-minute oral explanation of keystone species."
-        },
-        {
-          "id": "ses-101-3",
-          "date": "2026-10-02",
-          "subject": "Reading Comprehension",
-          "topic": "Inference & Character Motive Analysis in Fiction",
-          "duration": "60 mins",
-          "attendance": "Present",
-          "rating": 4,
-          "badge": "Great Effort",
-          "tutorNotes": "Solid textual evidence citing. Lucas identified subtle character motivations in chapter 4. We practiced pacing while reading aloud.",
-          "homework": "Reading Log Signed",
-          "nextSteps": "Focus on identifying thematic symbolism in non-fiction articles."
-        },
-        {
           "id": "ses-101-4",
           "date": "2026-09-28",
           "subject": "Mathematics",
@@ -117,6 +78,78 @@
           "feedback": "Cites 3 strong quotes from the novel to justify his answer. Great progress in paragraph transitions!"
         }
       ]
+    },
+    {
+      "id": "stu-102",
+      "pinCode": "3108",
+      "accessCode": "3108",
+      "fullName": "Maya Lin Chen",
+      "preferredName": "Maya",
+      "grade": "7th Grade",
+      "subjects": [
+        "Pre-Algebra",
+        "English Literature & Essay Writing"
+      ],
+      "parentName": "David & Grace Chen",
+      "parentPhone": "+1 (555) 891-4433",
+      "parentEmail": "grace.chen@example.com",
+      "enrolledDate": "2026-02-01",
+      "status": "Active",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+      "learningGoals": "Strengthen algebraic equation transformations and construct persuasive five-paragraph argumentative essays.",
+      "sessions": [
+        {
+          "id": "ses-102-1",
+          "date": "2026-10-10",
+          "subject": "Pre-Algebra",
+          "topic": "Two-Step Linear Equations & Isolating Variables",
+          "duration": "60 mins",
+          "attendance": "Present",
+          "rating": 5,
+          "badge": "Algebra Ace",
+          "tutorNotes": "Maya has completely internalized inverse operations. She navigated negative coefficients with great precision today.",
+          "homework": "Completed - 100%",
+          "nextSteps": "Move to multi-step equations with variables on both sides."
+        }
+      ],
+      "reports": [],
+      "works": []
+    },
+    {
+      "id": "stu-103",
+      "pinCode": "5812",
+      "accessCode": "5812",
+      "fullName": "Ethan Cole",
+      "preferredName": "Ethan",
+      "grade": "3rd Grade",
+      "subjects": [
+        "Mathematics",
+        "Science & Discovery"
+      ],
+      "parentName": "Sarah Cole",
+      "parentPhone": "+1 (555) 672-8901",
+      "parentEmail": "sarah.cole@example.com",
+      "enrolledDate": "2026-03-10",
+      "status": "Active",
+      "avatar": "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=200&auto=format&fit=crop&q=80",
+      "learningGoals": "Master skip counting patterns, strengthen word pronunciation, and develop independent reading fluency.",
+      "sessions": [
+        {
+          "id": "ses-103-1",
+          "date": "2026-10-08",
+          "subject": "Mathematics",
+          "topic": "Multiplication Arrays & Equal Groups",
+          "duration": "60 mins",
+          "attendance": "Present",
+          "rating": 5,
+          "badge": "Multiplication Star",
+          "tutorNotes": "Ethan grasped visual multiplication arrays very quickly.",
+          "homework": "Completed 100%",
+          "nextSteps": "Advance to division as sharing."
+        }
+      ],
+      "reports": [],
+      "works": []
     }
   ],
   "announcements": [
