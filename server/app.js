@@ -64,6 +64,19 @@ app.put('/api/center', async (req, res) => {
   }
 });
 
+// File upload endpoint for photos
+app.post('/api/upload', upload.single('photo'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file received' });
+    }
+    const fileUrl = `/uploads/${req.file.filename}`;
+    res.json({ success: true, url: fileUrl });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // 2. Parent Portal Lookup by PIN Code
 app.get('/api/portal/:accessCode', async (req, res) => {
   try {

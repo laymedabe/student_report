@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, 
   Plus, 
@@ -22,7 +22,8 @@ import {
   Copy, 
   MessageSquare,
   Sparkles,
-  KeyRound
+  KeyRound,
+  Camera
 } from 'lucide-react';
 
 export default function TeacherAdmin({ 
@@ -34,6 +35,8 @@ export default function TeacherAdmin({
   onShowToast, 
   onExitAdmin 
 }) {
+  const teacherPhotoInputRef = useRef(null);
+
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('apex_teacher_auth') === 'true';
@@ -469,6 +472,35 @@ export default function TeacherAdmin({
     } catch (err) {
       onShowToast({ type: 'error', message: 'Failed to delete announcement' });
     }
+  };
+
+  // Handle Teacher Photo File Upload from Device
+  const handleTeacherPhotoFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      onShowToast({ type: 'error', message: 'Image file must be under 10MB' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target.result;
+      setCenterForm(prev => ({ ...prev, avatar: dataUrl }));
+      onShowToast({ type: 'success', message: 'Photo loaded from device! Click "Save Center Information" to save.' });
+
+      try {
+        const formData = new FormData();
+        formData.append('photo', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success && data.url) {
+          setCenterForm(prev => ({ ...prev, avatar: data.url }));
+        }
+      } catch (_) {}
+    };
+    reader.readAsDataURL(file);
   };
 
   // Update Center Settings
@@ -1260,44 +1292,95 @@ export default function TeacherAdmin({
           </p>
 
           <form onSubmit={handleUpdateCenter}>
-            {/* Teacher Profile Photo Section */}
+            {/* Teacher Profile Photo Upload Section */}
             <div style={{
               background: '#f8fafc',
-              padding: '1.25rem',
+              padding: '1.5rem',
               borderRadius: 'var(--radius-lg)',
               border: '1px solid var(--border-light)',
               marginBottom: '1.5rem',
               display: 'flex',
               alignItems: 'center',
-              gap: '1.25rem',
+              gap: '1.5rem',
               flexWrap: 'wrap'
             }}>
-              <img 
-                src={centerForm.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'} 
-                alt="Teacher Profile Preview"
-                style={{
-                  width: '68px',
-                  height: '68px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: '3px solid var(--primary)',
-                  boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)'
-                }}
-              />
-              <div style={{ flex: 1, minWidth: '240px' }}>
-                <label className="form-label" style={{ fontWeight: 700, marginBottom: '0.35rem' }}>
-                  Teacher Profile Photo URL
-                </label>
-                <input 
-                  type="url" 
-                  className="form-input"
-                  placeholder="https://images.unsplash.com/photo-..."
-                  value={centerForm.avatar || ''}
-                  onChange={(e) => setCenterForm({ ...centerForm, avatar: e.target.value })}
-                  style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}
+              {/* Avatar Preview with Camera Overlay */}
+              <div 
+                style={{ position: 'relative', cursor: 'pointer' }}
+                onClick={() => teacherPhotoInputRef.current?.click()}
+                title="Click to choose a photo from your computer/device"
+              >
+                <img 
+                  src={centerForm.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'} 
+                  alt="Teacher Profile Preview"
+                  style={{
+                    width: '84px',
+                    height: '84px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '3px solid var(--primary)',
+                    boxShadow: '0 4px 14px rgba(79, 70, 229, 0.25)',
+                    display: 'block'
+                  }}
                 />
-                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Quick Presets:</span>
+                <div style={{
+                  position: 'absolute',
+                  bottom: '2px',
+                  right: '2px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '26px',
+                  height: '26px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                  border: '2px solid white'
+                }}>
+                  <Camera size={13} />
+                </div>
+              </div>
+
+              {/* Upload Controls */}
+              <div style={{ flex: 1, minWidth: '240px' }}>
+                <input 
+                  type="file"
+                  ref={teacherPhotoInputRef}
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  style={{ display: 'none' }}
+                  onChange={handleTeacherPhotoFileChange}
+                />
+                <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                  Teacher Profile Photo
+                </div>
+                <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: 0, marginBottom: '0.85rem' }}>
+                  Upload your picture directly from your computer or phone.
+                </p>
+
+                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary btn-sm"
+                    onClick={() => teacherPhotoInputRef.current?.click()}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, padding: '0.5rem 1rem' }}
+                  >
+                    <Upload size={15} /> Upload Photo from Device
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      setCenterForm({ ...centerForm, avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80' });
+                      onShowToast({ type: 'info', message: 'Reset to default educator photo' });
+                    }}
+                  >
+                    Reset Default
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>Sample avatars:</span>
                   <button 
                     type="button" 
                     className="btn btn-ghost btn-sm" 
