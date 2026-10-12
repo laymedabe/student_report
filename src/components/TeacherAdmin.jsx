@@ -113,6 +113,7 @@ export default function TeacherAdmin({
     email: center?.email || '',
     address: center?.address || '',
     activeTerm: center?.activeTerm || '',
+    avatar: center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80',
     passcode: ''
   });
 
@@ -126,7 +127,8 @@ export default function TeacherAdmin({
         phone: center.phone || '',
         email: center.email || '',
         address: center.address || '',
-        activeTerm: center.activeTerm || ''
+        activeTerm: center.activeTerm || '',
+        avatar: center.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'
       }));
     }
   }, [center]);
@@ -620,17 +622,48 @@ export default function TeacherAdmin({
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div className="brand-icon">
-            <Users size={20} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <div 
+            style={{ position: 'relative', cursor: 'pointer' }}
+            onClick={() => setAdminView('settings')}
+            title="Click to view & edit teacher profile photo"
+          >
+            <img 
+              src={center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'} 
+              alt={center?.tutorName || 'Teacher Profile'}
+              style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '3px solid white',
+                boxShadow: '0 2px 10px rgba(79, 70, 229, 0.25)',
+                display: 'block'
+              }}
+            />
+            <span style={{
+              position: 'absolute',
+              bottom: '1px',
+              right: '1px',
+              width: '13px',
+              height: '13px',
+              borderRadius: '50%',
+              backgroundColor: '#10b981',
+              border: '2px solid white'
+            }} title="Active Educator" />
           </div>
+
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <h2 style={{ fontSize: '1.35rem', margin: 0 }}>Teacher Control Center</h2>
-              <span className="badge badge-emerald">Admin</span>
+              <h2 style={{ fontSize: '1.3rem', margin: 0, fontWeight: 700 }}>
+                {center?.tutorName || 'Teacher Profile'}
+              </h2>
+              <span className="badge badge-emerald" style={{ fontSize: '0.72rem', fontWeight: 700 }}>
+                Teacher / Admin
+              </span>
             </div>
-            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-              Logged in as {center?.tutorName || 'Teacher Kimberly'} • {center?.name}
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: 0, marginTop: '0.15rem' }}>
+              {center?.tutorTitle || 'Lead Academic Coach'} • <strong style={{ color: 'var(--primary)' }}>{center?.name || 'Sambag Jaro Learning Center'}</strong>
             </p>
           </div>
         </div>
@@ -1227,6 +1260,72 @@ export default function TeacherAdmin({
           </p>
 
           <form onSubmit={handleUpdateCenter}>
+            {/* Teacher Profile Photo Section */}
+            <div style={{
+              background: '#f8fafc',
+              padding: '1.25rem',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border-light)',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1.25rem',
+              flexWrap: 'wrap'
+            }}>
+              <img 
+                src={centerForm.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'} 
+                alt="Teacher Profile Preview"
+                style={{
+                  width: '68px',
+                  height: '68px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '3px solid var(--primary)',
+                  boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)'
+                }}
+              />
+              <div style={{ flex: 1, minWidth: '240px' }}>
+                <label className="form-label" style={{ fontWeight: 700, marginBottom: '0.35rem' }}>
+                  Teacher Profile Photo URL
+                </label>
+                <input 
+                  type="url" 
+                  className="form-input"
+                  placeholder="https://images.unsplash.com/photo-..."
+                  value={centerForm.avatar || ''}
+                  onChange={(e) => setCenterForm({ ...centerForm, avatar: e.target.value })}
+                  style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}
+                />
+                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Quick Presets:</span>
+                  <button 
+                    type="button" 
+                    className="btn btn-ghost btn-sm" 
+                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
+                    onClick={() => setCenterForm({ ...centerForm, avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80' })}
+                  >
+                    Educator 1
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-ghost btn-sm" 
+                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
+                    onClick={() => setCenterForm({ ...centerForm, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80' })}
+                  >
+                    Educator 2
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-ghost btn-sm" 
+                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
+                    onClick={() => setCenterForm({ ...centerForm, avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80' })}
+                  >
+                    Educator 3
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="form-group">
               <label className="form-label">Center / Tutoring Name</label>
               <input 

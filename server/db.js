@@ -49,6 +49,9 @@ function saveLocalData(data) {
 // CENTER & TEACHER AUTH
 // -------------------------------------------------------------
 export async function getCenterInfo() {
+  const localData = loadLocalData();
+  const defaultAvatar = "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80";
+
   if (isSupabaseConfigured) {
     const { data, error } = await supabase.from('centers').select('*').limit(1).single();
     if (error || !data) {
@@ -60,7 +63,8 @@ export async function getCenterInfo() {
         phone: "+1 (555) 742-9918",
         email: "kimberly@apexscholars.edu",
         address: "842 Cambridge Avenue, Suite 400",
-        activeTerm: "Fall / Winter 2026 Term"
+        activeTerm: "Fall / Winter 2026 Term",
+        avatar: localData.center?.avatar || defaultAvatar
       };
     }
     const { passcode, ...publicInfo } = data;
@@ -73,13 +77,16 @@ export async function getCenterInfo() {
       phone: data.phone,
       email: data.email,
       address: data.address,
-      activeTerm: data.active_term
+      activeTerm: data.active_term,
+      avatar: data.avatar || localData.center?.avatar || defaultAvatar
     };
   }
 
-  const data = loadLocalData();
-  const { passcode, ...publicInfo } = data.center || {};
-  return publicInfo;
+  const { passcode, ...publicInfo } = localData.center || {};
+  return {
+    ...publicInfo,
+    avatar: publicInfo.avatar || defaultAvatar
+  };
 }
 
 export async function verifyTeacherPasscode(inputPasscode) {
@@ -95,6 +102,11 @@ export async function verifyTeacherPasscode(inputPasscode) {
 }
 
 export async function updateCenterInfo(updateData) {
+  // Always synchronize to local storage
+  const localData = loadLocalData();
+  localData.center = { ...localData.center, ...updateData };
+  saveLocalData(localData);
+
   if (isSupabaseConfigured) {
     const payload = {};
     if (updateData.name) payload.name = updateData.name;
@@ -116,13 +128,13 @@ export async function updateCenterInfo(updateData) {
 
     if (error) throw error;
     const { passcode, ...publicInfo } = data;
-    return publicInfo;
+    return {
+      ...publicInfo,
+      avatar: updateData.avatar || localData.center?.avatar
+    };
   }
 
-  const data = loadLocalData();
-  data.center = { ...data.center, ...updateData };
-  saveLocalData(data);
-  const { passcode, ...publicInfo } = data.center;
+  const { passcode, ...publicInfo } = localData.center;
   return publicInfo;
 }
 
