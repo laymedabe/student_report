@@ -724,8 +724,8 @@ export default function TeacherAdmin({
                 Teacher / Admin
               </span>
             </div>
-            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: 0, marginTop: '0.15rem' }}>
-              {center?.tutorTitle || 'Lead Academic Coach'} • <strong style={{ color: 'var(--primary)' }}>{center?.name || 'Sambag Jaro Learning Center'}</strong>
+            <p style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600, margin: 0, marginTop: '0.15rem' }}>
+              {center?.name || 'Sambag Jaro Learning Center'}
             </p>
           </div>
         </div>
@@ -1445,7 +1445,7 @@ export default function TeacherAdmin({
 
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">Lead Tutor / Instructor Name</label>
+                <label className="form-label">Teacher Name</label>
                 <input 
                   type="text" 
                   className="form-input"
