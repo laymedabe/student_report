@@ -86,8 +86,7 @@ export default function TeacherAdmin({
     parentEmail: '',
     learningGoals: '',
     avatar: '',
-    pinCode: '',
-    monthlySessions: 12
+    pinCode: ''
   });
 
   const [newSession, setNewSession] = useState({
@@ -280,8 +279,7 @@ export default function TeacherAdmin({
       parentEmail: '',
       learningGoals: '',
       avatar: '',
-      pinCode: autoPin,
-      monthlySessions: 12
+      pinCode: autoPin
     });
     setShowAddStudentModal(true);
   };
@@ -299,8 +297,7 @@ export default function TeacherAdmin({
       parentEmail: stu.parentEmail || '',
       learningGoals: stu.learningGoals || '',
       avatar: stu.avatar || '',
-      pinCode: stu.pinCode || stu.accessCode || '',
-      monthlySessions: stu.monthlySessions !== undefined && stu.monthlySessions !== null ? Number(stu.monthlySessions) : 12
+      pinCode: stu.pinCode || stu.accessCode || ''
     });
     setShowAddStudentModal(true);
   };
@@ -325,7 +322,6 @@ export default function TeacherAdmin({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newStudent,
-          monthlySessions: Number(newStudent.monthlySessions) > 0 ? Number(newStudent.monthlySessions) : 12,
           teacherId: currentTeacher?.id || 'teacher-1'
         })
       });
@@ -343,8 +339,7 @@ export default function TeacherAdmin({
           parentEmail: '',
           learningGoals: '',
           avatar: '',
-          pinCode: '',
-          monthlySessions: 12
+          pinCode: ''
         });
         onRefreshData();
         const pin = data.student?.pinCode || data.student?.accessCode || newStudent.pinCode;
@@ -677,28 +672,60 @@ export default function TeacherAdmin({
   // -------------------------------------------------------------
   if (!isAuthenticated) {
     return (
-      <div className="auth-screen-container">
-        <div className="auth-screen-card">
+      <div style={{
+        minHeight: '90vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+        background: 'radial-gradient(circle at top right, #e0e7ff 0%, #f8fafc 60%)'
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: 'var(--radius-xl)',
+          padding: '2.5rem',
+          maxWidth: '480px',
+          width: '100%',
+          boxShadow: 'var(--shadow-xl)',
+          border: '1px solid var(--border-light)'
+        }}>
           {/* Header Icon */}
-          <div className="auth-icon-badge">
-            {authTab === 'login' ? <Lock size={24} /> : <UserPlus size={24} />}
+          <div style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: 'var(--radius-lg)',
+            background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.25rem'
+          }}>
+            {authTab === 'login' ? <Lock size={26} /> : <UserPlus size={26} />}
           </div>
 
-          <h2 className="auth-title">
+          <h2 style={{ fontSize: '1.6rem', marginBottom: '0.35rem', textAlign: 'center' }}>
             {authTab === 'login' ? 'Teacher Admin Sign In' : 'Create Teacher Account'}
           </h2>
-          <p className="auth-subtitle">
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.5rem', textAlign: 'center' }}>
             {authTab === 'login'
               ? 'Sign in to access and manage your dedicated student roster.'
               : 'Register your educator profile to start managing your own students.'}
           </p>
 
           {/* Tab Switcher */}
-          <div className="auth-tabs">
+          <div style={{
+            display: 'flex',
+            background: '#f1f5f9',
+            padding: '4px',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '1.75rem',
+            gap: '4px'
+          }}>
             <button
               type="button"
               className={`btn btn-sm ${authTab === 'login' ? 'btn-primary' : 'btn-ghost'}`}
-              style={{ flex: 1, fontWeight: 700, minHeight: '38px' }}
+              style={{ flex: 1, fontWeight: 600 }}
               onClick={() => { setAuthTab('login'); setAuthError(''); }}
             >
               <LogIn size={15} /> Sign In
@@ -706,7 +733,7 @@ export default function TeacherAdmin({
             <button
               type="button"
               className={`btn btn-sm ${authTab === 'register' ? 'btn-primary' : 'btn-ghost'}`}
-              style={{ flex: 1, fontWeight: 700, minHeight: '38px' }}
+              style={{ flex: 1, fontWeight: 600 }}
               onClick={() => { setAuthTab('register'); setAuthError(''); }}
             >
               <UserPlus size={15} /> Create Account
@@ -716,67 +743,64 @@ export default function TeacherAdmin({
           {/* TAB 1: LOGIN */}
           {authTab === 'login' ? (
             <form onSubmit={handleLogin}>
-              <div className="auth-form-group">
-                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                   Teacher Email:
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type="email"
-                    placeholder="e.g. sample@email.com"
+                    placeholder="Enter your email (e.g. sample@email.com)"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    className="form-input"
                     style={{
-                      paddingLeft: '2.5rem',
-                      fontSize: '16px',
-                      minHeight: '48px'
+                      width: '100%',
+                      padding: '0.8rem 1rem 0.8rem 2.4rem',
+                      fontSize: '0.95rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border-strong)',
+                      outline: 'none'
                     }}
                     required
                     autoFocus
                   />
-                  <Mail size={17} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
                 </div>
               </div>
 
-              <div className="auth-form-group">
-                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                   Personal Passcode (PIN):
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type="password"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="e.g. 1234 (4 digits)"
+                    placeholder="Enter your 4-digit passcode"
                     value={loginPasscode}
                     onChange={(e) => setLoginPasscode(e.target.value)}
-                    className="form-input"
                     style={{
-                      paddingLeft: '2.5rem',
-                      fontSize: '16px',
-                      minHeight: '48px',
-                      border: authError ? '2px solid #ef4444' : undefined,
-                      letterSpacing: '0.12em'
+                      width: '100%',
+                      padding: '0.8rem 1rem 0.8rem 2.4rem',
+                      fontSize: '1.05rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: authError ? '2px solid #ef4444' : '1px solid var(--border-strong)',
+                      outline: 'none',
+                      letterSpacing: '0.1em'
                     }}
                     required
                   />
-                  <KeyRound size={17} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
                 </div>
               </div>
 
               {authError && (
-                <div style={{ color: '#b91c1c', fontSize: '0.875rem', marginBottom: '0.85rem', fontWeight: 700, background: '#fef2f2', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)' }}>
-                  ⚠️ {authError}
+                <div style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600 }}>
+                  {authError}
                 </div>
               )}
 
-              <button 
-                type="submit" 
-                className="btn btn-primary auth-submit-btn" 
-                style={{ width: '100%', minHeight: '48px', fontWeight: 700, fontSize: '1rem', marginBottom: '0.75rem' }}
-              >
-                Sign In to Dashboard
+              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
+                Sign In to Teacher Dashboard
               </button>
             </form>
           ) : (
@@ -876,12 +900,10 @@ export default function TeacherAdmin({
                   </label>
                   <input
                     type="password"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
                     placeholder="e.g. 5678"
                     value={regPasscode}
                     onChange={(e) => setRegPasscode(e.target.value)}
-                    style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '16px', minHeight: '48px', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border-strong)', outline: 'none', letterSpacing: '0.1em' }}
+                    style={{ width: '100%', padding: '0.75rem 0.9rem', fontSize: '0.95rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-strong)', outline: 'none', letterSpacing: '0.08em' }}
                     required
                   />
                 </div>
@@ -918,11 +940,7 @@ export default function TeacherAdmin({
                 </div>
               )}
 
-              <button 
-                type="submit" 
-                className="btn btn-primary auth-submit-btn" 
-                style={{ width: '100%', minHeight: '48px', fontWeight: 700, fontSize: '1rem', marginBottom: '0.75rem' }}
-              >
+              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
                 Create Teacher Account
               </button>
             </form>
@@ -930,47 +948,16 @@ export default function TeacherAdmin({
 
           <button
             type="button"
-            className="btn btn-ghost"
+            className="btn btn-ghost btn-sm"
             onClick={onExitAdmin}
-            style={{ width: '100%', minHeight: '42px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}
+            style={{ width: '100%' }}
           >
-            ← Back to Parent Access
+            ← Back to Parent Access Portal
           </button>
         </div>
       </div>
     );
   }
-
-  // Monthly Sessions Calculation Helper (decreases automatically as sessions in current month are done/finished)
-  const calcMonthlySessions = (stu) => {
-    const quota = Number(stu?.monthlySessions) > 0 ? Number(stu.monthlySessions) : 12;
-    const now = new Date();
-    const curYear = now.getFullYear();
-    const curMonth = now.getMonth();
-    const monthName = now.toLocaleString('default', { month: 'long' });
-
-    const monthSessions = (stu?.sessions || []).filter(s => {
-      if (!s.date) return false;
-      const parts = String(s.date).split('-');
-      if (parts.length >= 2) {
-        const y = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10) - 1;
-        return y === curYear && m === curMonth;
-      }
-      const d = new Date(s.date);
-      return !isNaN(d.getTime()) && d.getFullYear() === curYear && d.getMonth() === curMonth;
-    });
-
-    const completedThisMonth = monthSessions.filter(
-      s => s.attendance !== 'Cancelled' && s.attendance !== 'Excused Absence'
-    ).length;
-
-    const remaining = Math.max(0, quota - completedThisMonth);
-    const isFinished = remaining === 0;
-    const percent = Math.min(100, Math.round((completedThisMonth / quota) * 100));
-
-    return { quota, completedThisMonth, remaining, isFinished, percent, monthName, curYear };
-  };
 
   // -------------------------------------------------------------
   // VIEW: AUTHENTICATED TEACHER ADMIN WORKSPACE
@@ -1151,15 +1138,9 @@ export default function TeacherAdmin({
             </button>
           </div>
 
-          {/* Mobile Scroll Hint */}
-          <div className="table-scroll-hint no-print">
-            👉 Swipe table left & right to view all student records and actions
-          </div>
-
           {/* Students Table */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div className="table-responsive">
-              <table className="admin-table" style={{ minWidth: '780px' }}>
+            <table className="admin-table">
               <thead>
                 <tr>
                   <th>Student</th>
@@ -1231,37 +1212,14 @@ export default function TeacherAdmin({
                         </td>
 
                         <td>
-                          {(() => {
-                            const monthStats = calcMonthlySessions(stu);
-                            return (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                                <span 
-                                  className={`badge ${monthStats.isFinished ? 'badge-emerald' : 'badge-indigo'}`}
-                                  style={{ 
-                                    fontWeight: 700, 
-                                    fontSize: '0.78rem', 
-                                    display: 'inline-flex', 
-                                    alignItems: 'center', 
-                                    gap: '0.3rem', 
-                                    width: 'fit-content' 
-                                  }}
-                                  title={`${monthStats.completedThisMonth} of ${monthStats.quota} sessions completed in ${monthStats.monthName}`}
-                                >
-                                  {monthStats.isFinished 
-                                    ? `✓ All ${monthStats.quota} done (${monthStats.monthName})` 
-                                    : `${monthStats.remaining} of ${monthStats.quota} left (${monthStats.monthName})`}
-                                </span>
-                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                                  {stu.sessions?.length || 0} total sessions logged
-                                </div>
-                                {stu.reports?.length > 0 ? (
-                                  <span className="badge badge-emerald" style={{ fontSize: '0.65rem', width: 'fit-content' }}>Report Card Ready</span>
-                                ) : (
-                                  <span className="badge badge-amber" style={{ fontSize: '0.65rem', width: 'fit-content' }}>Pending Report</span>
-                                )}
-                              </div>
-                            );
-                          })()}
+                          <div style={{ fontSize: '0.85rem' }}>
+                            <span>{stu.sessions?.length || 0} sessions logged</span>
+                          </div>
+                          {stu.reports?.length > 0 ? (
+                            <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>Report Card Ready</span>
+                          ) : (
+                            <span className="badge badge-amber" style={{ fontSize: '0.65rem' }}>Pending Report</span>
+                          )}
                         </td>
 
                         <td style={{ textAlign: 'right' }}>
@@ -1313,7 +1271,6 @@ export default function TeacherAdmin({
                 )}
               </tbody>
             </table>
-            </div>
           </div>
         </div>
       )}
@@ -1393,52 +1350,6 @@ export default function TeacherAdmin({
                 </button>
               </div>
             </div>
-
-            {/* Monthly Sessions Progress Bar in Student Detail Banner */}
-            {(() => {
-              const activeMonthStats = calcMonthlySessions(activeStudent);
-              return (
-                <div style={{
-                  marginTop: '1.25rem',
-                  padding: '1rem 1.25rem',
-                  background: '#ffffff',
-                  borderRadius: 'var(--radius-md)',
-                  border: activeMonthStats.isFinished ? '1.5px solid #86efac' : '1px solid var(--border-light)',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span className={`badge ${activeMonthStats.isFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{ fontWeight: 800, fontSize: '0.825rem' }}>
-                        {activeMonthStats.monthName} Package: {activeMonthStats.quota} Sessions / Month
-                      </span>
-                      <strong style={{ fontSize: '0.95rem', color: activeMonthStats.isFinished ? '#15803d' : 'var(--primary)' }}>
-                        {activeMonthStats.isFinished 
-                          ? `🎉 All ${activeMonthStats.quota} sessions completed for ${activeMonthStats.monthName}!` 
-                          : `${activeMonthStats.remaining} sessions remaining (${activeMonthStats.completedThisMonth} done)`}
-                      </strong>
-                    </div>
-                    <button
-                      className="btn btn-ghost btn-sm"
-                      style={{ fontSize: '0.8rem', color: 'var(--primary)', padding: '0.2rem 0.5rem' }}
-                      onClick={() => handleOpenEditStudent(activeStudent)}
-                      title="Adjust monthly sessions quota"
-                    >
-                      <Edit3 size={13} /> Change Monthly Quota
-                    </button>
-                  </div>
-
-                  <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden' }}>
-                    <div style={{
-                      width: `${activeMonthStats.percent}%`,
-                      height: '100%',
-                      background: activeMonthStats.isFinished ? '#10b981' : 'var(--primary)',
-                      borderRadius: '999px',
-                      transition: 'width 0.4s ease'
-                    }} />
-                  </div>
-                </div>
-              );
-            })()}
           </div>
 
           {/* Sessions List */}
@@ -2017,28 +1928,14 @@ export default function TeacherAdmin({
                   </label>
                   <input
                     type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
                     className="form-input"
                     placeholder="e.g. 4829 (4-6 digits)"
                     value={newStudent.pinCode}
-                    onChange={(e) => setNewStudent({ ...newStudent, pinCode: e.target.value.toUpperCase() })}
+                    onChange={(e) => setNewStudent({ ...newStudent, pinCode: e.target.value })}
                     required
-                    style={{ fontWeight: 800, letterSpacing: '0.12em', fontSize: '16px' }}
+                    style={{ fontWeight: 700, letterSpacing: '0.08em' }}
                   />
                 </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Monthly Sessions</label>
-                <input
-                  type="number"
-                  min="1"
-                  className="form-input"
-                  placeholder="12"
-                  value={newStudent.monthlySessions}
-                  onChange={(e) => setNewStudent({ ...newStudent, monthlySessions: e.target.value })}
-                />
               </div>
 
               <div className="form-group">

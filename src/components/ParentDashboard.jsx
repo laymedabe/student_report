@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
-import { 
-  Calendar, 
-  BookOpen, 
-  Award, 
-  CheckCircle2, 
-  Clock, 
-  Printer, 
-  Share2, 
-  Star, 
-  ArrowLeft, 
-  FileText, 
-  Sparkles, 
-  Phone, 
-  Mail, 
+import {
+  Calendar,
+  BookOpen,
+  Award,
+  CheckCircle2,
+  Clock,
+  Printer,
+  Share2,
+  Star,
+  ArrowLeft,
+  FileText,
+  Sparkles,
+  Phone,
+  Mail,
   KeyRound
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export default function ParentDashboard({ 
-  student, 
-  center, 
-  announcements = [], 
-  onBackToAccess, 
-  onShowToast 
+export default function ParentDashboard({
+  student,
+  center,
+  announcements = [],
+  onBackToAccess,
+  onShowToast
 }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [subjectFilter, setSubjectFilter] = useState('All');
@@ -72,33 +72,6 @@ export default function ParentDashboard({
   const presentCount = (student.sessions || []).filter(s => s.attendance === 'Present').length;
   const attendanceRate = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 100;
 
-  // Monthly Sessions Tracking (Configured per student, default 12, decreases automatically as sessions in current month are done/finished)
-  const monthlyQuota = Number(student?.monthlySessions) > 0 ? Number(student.monthlySessions) : 12;
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const currentMonthName = now.toLocaleString('default', { month: 'long' });
-
-  const sessionsThisMonth = (student?.sessions || []).filter(s => {
-    if (!s.date) return false;
-    const parts = String(s.date).split('-');
-    if (parts.length >= 2) {
-      const y = parseInt(parts[0], 10);
-      const m = parseInt(parts[1], 10) - 1;
-      return y === currentYear && m === currentMonth;
-    }
-    const d = new Date(s.date);
-    return !isNaN(d.getTime()) && d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-  });
-
-  const completedThisMonth = sessionsThisMonth.filter(
-    s => s.attendance !== 'Cancelled' && s.attendance !== 'Excused Absence'
-  ).length;
-
-  const remainingThisMonth = Math.max(0, monthlyQuota - completedThisMonth);
-  const isMonthFinished = remainingThisMonth === 0;
-  const monthPercent = Math.min(100, Math.round((completedThisMonth / monthlyQuota) * 100));
-
   const displayPin = student.pinCode || student.accessCode;
 
   return (
@@ -112,7 +85,7 @@ export default function ParentDashboard({
         flexWrap: 'wrap',
         gap: '0.75rem'
       }}>
-        <button 
+        <button
           className="btn btn-ghost btn-sm"
           onClick={onBackToAccess}
           style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)' }}
@@ -126,7 +99,7 @@ export default function ParentDashboard({
             <KeyRound size={15} color="var(--primary)" />
             Student PIN: <strong style={{ color: 'var(--primary)', letterSpacing: '0.08em', fontSize: '0.95rem' }}>{displayPin}</strong>
           </span>
-          <button 
+          <button
             className="btn btn-secondary btn-sm"
             onClick={handleCopyLink}
             title="Copy shareable link for WhatsApp/Email"
@@ -165,8 +138,8 @@ export default function ParentDashboard({
       <div className="student-hero-card">
         <div className="hero-layout">
           <div className="hero-profile">
-            <img 
-              src={student.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"} 
+            <img
+              src={student.avatar || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80"}
               alt={student.fullName}
               className="student-avatar-lg"
             />
@@ -177,7 +150,7 @@ export default function ParentDashboard({
                   {student.status || 'Active Tutee'}
                 </span>
               </div>
-              
+
               <div className="hero-subtitle">
                 <span>{student.grade}</span>
                 <span>•</span>
@@ -197,7 +170,7 @@ export default function ParentDashboard({
           </div>
 
           <div className="hero-actions no-print">
-            <button 
+            <button
               className="btn btn-secondary btn-sm"
               onClick={handlePrint}
               style={{ background: 'rgba(255, 255, 255, 0.9)', color: '#1e1b4b', fontWeight: 700 }}
@@ -205,7 +178,7 @@ export default function ParentDashboard({
               <Printer size={16} />
               Print / Save PDF Report
             </button>
-            <button 
+            <button
               className="btn btn-primary btn-sm"
               onClick={triggerConfetti}
               style={{ background: '#f59e0b', color: '#1e1b4b', fontWeight: 700 }}
@@ -213,125 +186,6 @@ export default function ParentDashboard({
               <Sparkles size={16} />
               Celebrate Progress! 🎉
             </button>
-          </div>
-        </div>
-
-        {/* Monthly Sessions Countdown Card Widget on Student Hero Banner */}
-        <div style={{
-          marginTop: '1.5rem',
-          padding: '1.25rem 1.5rem',
-          background: 'rgba(255, 255, 255, 0.12)',
-          backdropFilter: 'blur(16px)',
-          borderRadius: 'var(--radius-lg)',
-          border: isMonthFinished ? '1.5px solid rgba(52, 211, 153, 0.8)' : '1.5px solid rgba(255, 255, 255, 0.25)',
-          boxShadow: '0 6px 24px rgba(0, 0, 0, 0.2)'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            marginBottom: '0.85rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-              <div style={{
-                background: isMonthFinished ? '#10b981' : '#38bdf8',
-                color: isMonthFinished ? '#ffffff' : '#0f172a',
-                padding: '0.6rem',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: isMonthFinished ? '0 0 15px rgba(16, 185, 129, 0.6)' : '0 0 15px rgba(56, 189, 248, 0.5)'
-              }}>
-                {isMonthFinished ? <CheckCircle2 size={24} /> : <Clock size={24} />}
-              </div>
-              <div>
-                <div style={{ fontSize: '0.85rem', color: '#c7d2fe', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-                  {currentMonthName} {currentYear} • Monthly Tutoring Package
-                </div>
-                <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', marginTop: '0.1rem' }}>
-                  {isMonthFinished ? (
-                    <span style={{ color: '#6ee7b7', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                      All {monthlyQuota} Sessions Finished! 🎉
-                    </span>
-                  ) : (
-                    <span>
-                      <strong style={{ fontSize: '1.65rem', color: '#38bdf8', fontWeight: 900 }}>{remainingThisMonth}</strong> of {monthlyQuota} sessions remaining
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <span className={`badge ${isMonthFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{
-              background: isMonthFinished ? 'rgba(16, 185, 129, 0.35)' : 'rgba(56, 189, 248, 0.25)',
-              color: isMonthFinished ? '#a7f3d0' : '#e0f2fe',
-              fontSize: '0.875rem',
-              fontWeight: 800,
-              padding: '0.45rem 0.9rem',
-              border: isMonthFinished ? '1px solid #10b981' : '1px solid #38bdf8',
-              letterSpacing: '0.05em'
-            }}>
-              {completedThisMonth} / {monthlyQuota} Done
-            </span>
-          </div>
-
-          {/* Progress Bar */}
-          <div style={{
-            width: '100%',
-            height: '10px',
-            background: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: '999px',
-            overflow: 'hidden',
-            marginBottom: '0.85rem'
-          }}>
-            <div style={{
-              width: `${monthPercent}%`,
-              height: '100%',
-              background: isMonthFinished 
-                ? 'linear-gradient(90deg, #10b981, #34d399)' 
-                : 'linear-gradient(90deg, #38bdf8, #818cf8)',
-              borderRadius: '999px',
-              transition: 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-            }} />
-          </div>
-
-          {/* Individual Session Dots / Indicators (1 to monthlyQuota) */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: '0.4rem'
-          }}>
-            {Array.from({ length: monthlyQuota }).map((_, idx) => {
-              const sessionNum = idx + 1;
-              const isDone = sessionNum <= completedThisMonth;
-              return (
-                <div
-                  key={idx}
-                  title={isDone ? `Session ${sessionNum}: Done` : `Session ${sessionNum}: Remaining`}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: monthlyQuota <= 12 ? '30px' : '26px',
-                    height: monthlyQuota <= 12 ? '30px' : '26px',
-                    borderRadius: '50%',
-                    fontSize: '0.75rem',
-                    fontWeight: 800,
-                    background: isDone ? '#10b981' : 'rgba(255, 255, 255, 0.15)',
-                    color: isDone ? '#ffffff' : '#e0e7ff',
-                    border: isDone ? '2px solid #6ee7b7' : '1.5px dashed rgba(255, 255, 255, 0.35)',
-                    boxShadow: isDone ? '0 2px 8px rgba(16, 185, 129, 0.5)' : 'none',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  {isDone ? '✓' : sessionNum}
-                </div>
-              );
-            })}
           </div>
         </div>
 
@@ -356,27 +210,13 @@ export default function ParentDashboard({
 
       {/* Quick KPI Stats Grid */}
       <div className="stats-grid no-print">
-        <div className="stat-card" style={{ borderLeft: isMonthFinished ? '4px solid #10b981' : '4px solid #3b82f6' }}>
-          <div className="stat-icon" style={{ background: isMonthFinished ? '#ecfdf5' : '#eff6ff', color: isMonthFinished ? '#059669' : '#2563eb' }}>
-            <Clock size={26} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value" style={{ color: isMonthFinished ? '#059669' : 'inherit' }}>
-              {isMonthFinished ? 'All Done!' : `${remainingThisMonth} Left`}
-            </div>
-            <div className="stat-label">
-              {currentMonthName} Sessions ({completedThisMonth}/{monthlyQuota} Done)
-            </div>
-          </div>
-        </div>
-
         <div className="stat-card">
           <div className="stat-icon" style={{ background: '#eef2ff', color: '#4f46e5' }}>
             <Calendar size={26} />
           </div>
           <div className="stat-content">
             <div className="stat-value">{totalSessions}</div>
-            <div className="stat-label">Total Logged Sessions</div>
+            <div className="stat-label">Sessions Completed</div>
           </div>
         </div>
 
@@ -399,11 +239,21 @@ export default function ParentDashboard({
             <div className="stat-label">Academic Rating</div>
           </div>
         </div>
+
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+            <BookOpen size={26} />
+          </div>
+          <div className="stat-content">
+            <div className="stat-value">{(student.subjects || []).length}</div>
+            <div className="stat-label">Enrolled Subjects</div>
+          </div>
+        </div>
       </div>
 
       {/* Tabs Navigation */}
       <div className="tabs-container no-print">
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
         >
@@ -411,7 +261,7 @@ export default function ParentDashboard({
           Overview & Highlights
         </button>
 
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'sessions' ? 'active' : ''}`}
           onClick={() => setActiveTab('sessions')}
         >
@@ -420,7 +270,7 @@ export default function ParentDashboard({
           <span className="tab-badge">{totalSessions}</span>
         </button>
 
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'progress' ? 'active' : ''}`}
           onClick={() => setActiveTab('progress')}
         >
@@ -428,7 +278,7 @@ export default function ParentDashboard({
           Progress & Growth
         </button>
 
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'report' ? 'active' : ''}`}
           onClick={() => setActiveTab('report')}
         >
@@ -515,7 +365,7 @@ export default function ParentDashboard({
                 Tutor Summary & Praise
               </h3>
               <p style={{ fontSize: '0.925rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                {latestReport?.tutorSummary || 
+                {latestReport?.tutorSummary ||
                   `${student.preferredName || student.fullName} is demonstrating tremendous effort, engagement, and consistent focus during our tutoring sessions. We are proud of the dedication shown each week!`
                 }
               </p>
@@ -554,29 +404,6 @@ export default function ParentDashboard({
           ======================================================== */}
       {activeTab === 'sessions' && (
         <div>
-          {/* Monthly Package Status in Session Logs */}
-          <div style={{
-            background: isMonthFinished ? '#ecfdf5' : '#eff6ff',
-            border: isMonthFinished ? '1px solid #86efac' : '1px solid #bfdbfe',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.65rem 1rem',
-            marginBottom: '1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.5rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-              <Clock size={16} color={isMonthFinished ? '#059669' : '#2563eb'} />
-              <strong>{currentMonthName} {currentYear}:</strong>
-              <span>{completedThisMonth} of {monthlyQuota} sessions completed</span>
-            </div>
-            <span className={`badge ${isMonthFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{ fontWeight: 700 }}>
-              {isMonthFinished ? 'Completed' : `${remainingThisMonth} Remaining`}
-            </span>
-          </div>
-
           {/* Filter Bar */}
           <div style={{
             display: 'flex',
@@ -587,14 +414,14 @@ export default function ParentDashboard({
             gap: '1rem'
           }}>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button 
+              <button
                 className={`btn btn-sm ${subjectFilter === 'All' ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => setSubjectFilter('All')}
               >
                 All Subjects ({totalSessions})
               </button>
               {(student.subjects || []).map((sub, idx) => (
-                <button 
+                <button
                   key={idx}
                   className={`btn btn-sm ${subjectFilter === sub ? 'btn-primary' : 'btn-secondary'}`}
                   onClick={() => setSubjectFilter(sub)}
@@ -614,8 +441,8 @@ export default function ParentDashboard({
             filteredSessions.map((session) => {
               const sessionDate = new Date(session.date);
               const day = isNaN(sessionDate.getDate()) ? '10' : sessionDate.getDate();
-              const month = isNaN(sessionDate.toLocaleString('default', { month: 'short' })) 
-                ? 'OCT' 
+              const month = isNaN(sessionDate.toLocaleString('default', { month: 'short' }))
+                ? 'OCT'
                 : sessionDate.toLocaleString('default', { month: 'short' }).toUpperCase();
 
               return (
@@ -700,7 +527,7 @@ export default function ParentDashboard({
             {latestReport?.subjectEvaluations && latestReport.subjectEvaluations.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {latestReport.subjectEvaluations.map((item, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     style={{
                       background: '#f8fafc',
@@ -773,7 +600,7 @@ export default function ParentDashboard({
               Earned Badges & Milestones
             </h3>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <div 
+              <div
                 onClick={triggerConfetti}
                 style={{
                   background: '#fffbeb',
@@ -797,7 +624,7 @@ export default function ParentDashboard({
                 </div>
               </div>
 
-              <div 
+              <div
                 onClick={triggerConfetti}
                 style={{
                   background: '#eef2ff',
@@ -819,7 +646,7 @@ export default function ParentDashboard({
                 </div>
               </div>
 
-              <div 
+              <div
                 onClick={triggerConfetti}
                 style={{
                   background: '#ecfdf5',
@@ -874,7 +701,7 @@ export default function ParentDashboard({
                 Ready to save as PDF or print. Click the button to launch your device's print dialog.
               </p>
             </div>
-            <button 
+            <button
               className="btn btn-primary"
               onClick={handlePrint}
             >
@@ -907,65 +734,55 @@ export default function ParentDashboard({
             </div>
 
             {/* Student Meta Details */}
-            <div className="table-responsive" style={{ marginBottom: '1.75rem' }}>
-              <table className="student-meta-table" style={{ minWidth: '480px', margin: 0 }}>
-                <tbody>
-                  <tr>
-                    <td><strong>Student Name:</strong> {student.fullName}</td>
-                    <td><strong>Grade Level:</strong> {student.grade}</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Parent / Guardian:</strong> {student.parentName}</td>
-                    <td><strong>Attendance Record:</strong> {latestReport?.attendanceRate || `${attendanceRate}%`}</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Enrolled Subjects:</strong> {(student.subjects || []).join(', ')}</td>
-                    <td><strong>Student PIN:</strong> <span style={{ fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.05em' }}>{displayPin}</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <table className="student-meta-table">
+              <tbody>
+                <tr>
+                  <td><strong>Student Name:</strong> {student.fullName}</td>
+                  <td><strong>Grade Level:</strong> {student.grade}</td>
+                </tr>
+                <tr>
+                  <td><strong>Parent / Guardian:</strong> {student.parentName}</td>
+                  <td><strong>Attendance Record:</strong> {latestReport?.attendanceRate || `${attendanceRate}%`}</td>
+                </tr>
+                <tr>
+                  <td><strong>Enrolled Subjects:</strong> {(student.subjects || []).join(', ')}</td>
+                  <td><strong>Student PIN:</strong> <span style={{ fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.05em' }}>{displayPin}</span></td>
+                </tr>
+              </tbody>
+            </table>
 
             {/* Subject Evaluations Table */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <h4 style={{ fontSize: '1.15rem', color: '#0f172a', margin: 0 }}>
-                Academic Subject Performance & Mastery
-              </h4>
-              <div className="table-scroll-hint no-print" style={{ margin: 0 }}>
-                👉 Swipe table to see all notes
-              </div>
-            </div>
-
-            <div className="table-responsive" style={{ marginBottom: '1.5rem' }}>
-              <table className="grades-table" style={{ minWidth: '540px', margin: 0 }}>
-                <thead>
-                  <tr>
-                    <th style={{ width: '25%' }}>Subject</th>
-                    <th style={{ width: '20%' }}>Grade</th>
-                    <th style={{ width: '25%' }}>Mastery Level</th>
-                    <th style={{ width: '30%' }}>Teacher Observations</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {latestReport?.subjectEvaluations && latestReport.subjectEvaluations.length > 0 ? (
-                    latestReport.subjectEvaluations.map((evalItem, i) => (
-                      <tr key={i}>
-                        <td style={{ fontWeight: 700 }}>{evalItem.subject}</td>
-                        <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{evalItem.grade}</td>
-                        <td style={{ fontWeight: 600 }}>{evalItem.mastery}</td>
-                        <td style={{ fontSize: '0.925rem', color: 'var(--text-main)', lineHeight: 1.5 }}>{evalItem.comment}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
-                        No evaluation entries recorded yet.
-                      </td>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: '#0f172a' }}>
+              Academic Subject Performance & Mastery
+            </h4>
+            <table className="grades-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '25%' }}>Subject</th>
+                  <th style={{ width: '20%' }}>Grade</th>
+                  <th style={{ width: '25%' }}>Mastery Level</th>
+                  <th style={{ width: '30%' }}>Teacher Observations</th>
+                </tr>
+              </thead>
+              <tbody>
+                {latestReport?.subjectEvaluations && latestReport.subjectEvaluations.length > 0 ? (
+                  latestReport.subjectEvaluations.map((evalItem, i) => (
+                    <tr key={i}>
+                      <td style={{ fontWeight: 700 }}>{evalItem.subject}</td>
+                      <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{evalItem.grade}</td>
+                      <td>{evalItem.mastery}</td>
+                      <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{evalItem.comment}</td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
+                      No evaluation entries recorded yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
 
             {/* Strengths & Growth Matrix */}
             <div className="report-evaluation-section">
@@ -1008,7 +825,7 @@ export default function ParentDashboard({
                 Lead Tutor's Comprehensive Summary:
               </strong>
               <p style={{ fontSize: '0.925rem', color: '#1e293b', lineHeight: 1.6 }}>
-                {latestReport?.tutorSummary || 
+                {latestReport?.tutorSummary ||
                   `${student.fullName} has demonstrated great enthusiasm and growth during this period. We look forward to continuing this positive academic trajectory in upcoming sessions.`}
               </p>
             </div>
