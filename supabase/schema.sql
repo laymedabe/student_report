@@ -49,8 +49,12 @@ CREATE TABLE IF NOT EXISTS students (
   status TEXT DEFAULT 'Active',
   avatar TEXT,
   learning_goals TEXT,
+  monthly_sessions INTEGER DEFAULT 12,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration helper for existing databases:
+ALTER TABLE students ADD COLUMN IF NOT EXISTS monthly_sessions INTEGER DEFAULT 12;
 
 CREATE INDEX IF NOT EXISTS idx_students_pin ON students(pin_code);
 

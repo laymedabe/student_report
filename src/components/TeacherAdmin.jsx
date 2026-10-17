@@ -86,7 +86,8 @@ export default function TeacherAdmin({
     parentEmail: '',
     learningGoals: '',
     avatar: '',
-    pinCode: ''
+    pinCode: '',
+    monthlySessions: 12
   });
 
   const [newSession, setNewSession] = useState({
@@ -279,7 +280,8 @@ export default function TeacherAdmin({
       parentEmail: '',
       learningGoals: '',
       avatar: '',
-      pinCode: autoPin
+      pinCode: autoPin,
+      monthlySessions: 12
     });
     setShowAddStudentModal(true);
   };
@@ -297,7 +299,8 @@ export default function TeacherAdmin({
       parentEmail: stu.parentEmail || '',
       learningGoals: stu.learningGoals || '',
       avatar: stu.avatar || '',
-      pinCode: stu.pinCode || stu.accessCode || ''
+      pinCode: stu.pinCode || stu.accessCode || '',
+      monthlySessions: stu.monthlySessions !== undefined && stu.monthlySessions !== null ? Number(stu.monthlySessions) : 12
     });
     setShowAddStudentModal(true);
   };
@@ -322,6 +325,7 @@ export default function TeacherAdmin({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newStudent,
+          monthlySessions: Number(newStudent.monthlySessions) > 0 ? Number(newStudent.monthlySessions) : 12,
           teacherId: currentTeacher?.id || 'teacher-1'
         })
       });
@@ -339,7 +343,8 @@ export default function TeacherAdmin({
           parentEmail: '',
           learningGoals: '',
           avatar: '',
-          pinCode: ''
+          pinCode: '',
+          monthlySessions: 12
         });
         onRefreshData();
         const pin = data.student?.pinCode || data.student?.accessCode || newStudent.pinCode;
@@ -936,6 +941,37 @@ export default function TeacherAdmin({
     );
   }
 
+  // Monthly Sessions Calculation Helper (decreases automatically as sessions in current month are done/finished)
+  const calcMonthlySessions = (stu) => {
+    const quota = Number(stu?.monthlySessions) > 0 ? Number(stu.monthlySessions) : 12;
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth();
+    const monthName = now.toLocaleString('default', { month: 'long' });
+
+    const monthSessions = (stu?.sessions || []).filter(s => {
+      if (!s.date) return false;
+      const parts = String(s.date).split('-');
+      if (parts.length >= 2) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        return y === curYear && m === curMonth;
+      }
+      const d = new Date(s.date);
+      return !isNaN(d.getTime()) && d.getFullYear() === curYear && d.getMonth() === curMonth;
+    });
+
+    const completedThisMonth = monthSessions.filter(
+      s => s.attendance !== 'Cancelled' && s.attendance !== 'Excused Absence'
+    ).length;
+
+    const remaining = Math.max(0, quota - completedThisMonth);
+    const isFinished = remaining === 0;
+    const percent = Math.min(100, Math.round((completedThisMonth / quota) * 100));
+
+    return { quota, completedThisMonth, remaining, isFinished, percent, monthName, curYear };
+  };
+
   // -------------------------------------------------------------
   // VIEW: AUTHENTICATED TEACHER ADMIN WORKSPACE
   // -------------------------------------------------------------
@@ -1195,14 +1231,37 @@ export default function TeacherAdmin({
                         </td>
 
                         <td>
-                          <div style={{ fontSize: '0.85rem' }}>
-                            <span>{stu.sessions?.length || 0} sessions logged</span>
-                          </div>
-                          {stu.reports?.length > 0 ? (
-                            <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>Report Card Ready</span>
-                          ) : (
-                            <span className="badge badge-amber" style={{ fontSize: '0.65rem' }}>Pending Report</span>
-                          )}
+                          {(() => {
+                            const monthStats = calcMonthlySessions(stu);
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <span 
+                                  className={`badge ${monthStats.isFinished ? 'badge-emerald' : 'badge-indigo'}`}
+                                  style={{ 
+                                    fontWeight: 700, 
+                                    fontSize: '0.78rem', 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    gap: '0.3rem', 
+                                    width: 'fit-content' 
+                                  }}
+                                  title={`${monthStats.completedThisMonth} of ${monthStats.quota} sessions completed in ${monthStats.monthName}`}
+                                >
+                                  {monthStats.isFinished 
+                                    ? `✓ All ${monthStats.quota} done (${monthStats.monthName})` 
+                                    : `${monthStats.remaining} of ${monthStats.quota} left (${monthStats.monthName})`}
+                                </span>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                  {stu.sessions?.length || 0} total sessions logged
+                                </div>
+                                {stu.reports?.length > 0 ? (
+                                  <span className="badge badge-emerald" style={{ fontSize: '0.65rem', width: 'fit-content' }}>Report Card Ready</span>
+                                ) : (
+                                  <span className="badge badge-amber" style={{ fontSize: '0.65rem', width: 'fit-content' }}>Pending Report</span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         <td style={{ textAlign: 'right' }}>
@@ -1334,6 +1393,52 @@ export default function TeacherAdmin({
                 </button>
               </div>
             </div>
+
+            {/* Monthly Sessions Progress Bar in Student Detail Banner */}
+            {(() => {
+              const activeMonthStats = calcMonthlySessions(activeStudent);
+              return (
+                <div style={{
+                  marginTop: '1.25rem',
+                  padding: '1rem 1.25rem',
+                  background: '#ffffff',
+                  borderRadius: 'var(--radius-md)',
+                  border: activeMonthStats.isFinished ? '1.5px solid #86efac' : '1px solid var(--border-light)',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span className={`badge ${activeMonthStats.isFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{ fontWeight: 800, fontSize: '0.825rem' }}>
+                        {activeMonthStats.monthName} Package: {activeMonthStats.quota} Sessions / Month
+                      </span>
+                      <strong style={{ fontSize: '0.95rem', color: activeMonthStats.isFinished ? '#15803d' : 'var(--primary)' }}>
+                        {activeMonthStats.isFinished 
+                          ? `🎉 All ${activeMonthStats.quota} sessions completed for ${activeMonthStats.monthName}!` 
+                          : `${activeMonthStats.remaining} sessions remaining (${activeMonthStats.completedThisMonth} done)`}
+                      </strong>
+                    </div>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      style={{ fontSize: '0.8rem', color: 'var(--primary)', padding: '0.2rem 0.5rem' }}
+                      onClick={() => handleOpenEditStudent(activeStudent)}
+                      title="Adjust monthly sessions quota"
+                    >
+                      <Edit3 size={13} /> Change Monthly Quota
+                    </button>
+                  </div>
+
+                  <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${activeMonthStats.percent}%`,
+                      height: '100%',
+                      background: activeMonthStats.isFinished ? '#10b981' : 'var(--primary)',
+                      borderRadius: '999px',
+                      transition: 'width 0.4s ease'
+                    }} />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Sessions List */}
@@ -1921,6 +2026,75 @@ export default function TeacherAdmin({
                     required
                     style={{ fontWeight: 800, letterSpacing: '0.12em', fontSize: '16px' }}
                   />
+                </div>
+              </div>
+
+              {/* Monthly Sessions Allocation Input (Up to 12 sessions per month) */}
+              <div style={{
+                background: '#f0fdf4',
+                padding: '1.15rem 1.25rem',
+                borderRadius: 'var(--radius-md)',
+                border: '1.5px solid #86efac',
+                marginBottom: '1.25rem'
+              }}>
+                <label className="form-label" style={{ color: '#166534', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 700, marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Calendar size={16} color="#16a34a" /> Enrolled Monthly Sessions (Up to 12 Sessions / Month) *
+                  </span>
+                  <span style={{ fontSize: '0.78rem', background: '#dcfce7', color: '#15803d', padding: '0.15rem 0.6rem', borderRadius: '999px', fontWeight: 700 }}>
+                    Standard: 12 sessions
+                  </span>
+                </label>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.6rem' }}>
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    className="form-input"
+                    placeholder="12"
+                    value={newStudent.monthlySessions}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setNewStudent({ ...newStudent, monthlySessions: '' });
+                      } else {
+                        const num = parseInt(val, 10);
+                        setNewStudent({ ...newStudent, monthlySessions: isNaN(num) ? 12 : Math.min(12, Math.max(1, num)) });
+                      }
+                    }}
+                    required
+                    style={{ maxWidth: '120px', fontWeight: 800, fontSize: '1.2rem', borderColor: '#86efac', background: '#ffffff', color: '#166534', textAlign: 'center' }}
+                  />
+
+                  {/* Quick Preset Buttons for 4, 8, 12 sessions */}
+                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                    {[4, 8, 12].map((count) => {
+                      const isSelected = Number(newStudent.monthlySessions) === count;
+                      return (
+                        <button
+                          key={count}
+                          type="button"
+                          className="btn btn-sm"
+                          onClick={() => setNewStudent({ ...newStudent, monthlySessions: count })}
+                          style={{
+                            background: isSelected ? '#16a34a' : '#ffffff',
+                            color: isSelected ? '#ffffff' : '#166534',
+                            border: '1px solid #86efac',
+                            fontWeight: 700,
+                            padding: '0.35rem 0.75rem',
+                            fontSize: '0.8rem'
+                          }}
+                        >
+                          {count === 12 ? '12 Sessions (Full)' : `${count} Sessions`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '0.825rem', color: '#166534', lineHeight: 1.45 }}>
+                  The teacher enrolls the student for up to 12 sessions per month. The sessions count automatically decreases on the student's dashboard card as each lesson is finished until all sessions are completed in the month.
                 </div>
               </div>
 

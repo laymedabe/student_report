@@ -42,6 +42,7 @@
       "parentEmail": "eleanor.vance@example.com",
       "enrolledDate": "2026-01-15",
       "status": "Active",
+      "monthlySessions": 12,
       "avatar": "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80",
       "learningGoals": "Master complex fraction arithmetic, strengthen multi-step word problem synthesis, and refine reading inference skills.",
       "sessions": [
@@ -119,6 +120,7 @@
       "parentEmail": "grace.chen@example.com",
       "enrolledDate": "2026-02-01",
       "status": "Active",
+      "monthlySessions": 12,
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
       "learningGoals": "Strengthen algebraic equation transformations and construct persuasive five-paragraph argumentative essays.",
       "sessions": [
@@ -155,6 +157,7 @@
       "parentEmail": "sarah.cole@example.com",
       "enrolledDate": "2026-03-10",
       "status": "Active",
+      "monthlySessions": 12,
       "avatar": "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=200&auto=format&fit=crop&q=80",
       "learningGoals": "Master skip counting patterns, strengthen word pronunciation, and develop independent reading fluency.",
       "sessions": [

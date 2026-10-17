@@ -439,6 +439,17 @@ export async function getStudentByPin(inputPin) {
       status: student.status,
       avatar: student.avatar,
       learningGoals: student.learning_goals,
+      monthlySessions: (() => {
+        if (student.monthly_sessions !== undefined && student.monthly_sessions !== null) {
+          return Number(student.monthly_sessions);
+        }
+        try {
+          const localData = loadLocalData();
+          const localRec = (localData.students || []).find(ls => ls.id === student.id);
+          if (localRec?.monthlySessions !== undefined) return Number(localRec.monthlySessions);
+        } catch (_) {}
+        return 12;
+      })(),
       teacherId: student.teacher_id || 'teacher-1',
       teacher: await getTeacherById(student.teacher_id || 'teacher-1'),
       sessions: (sessions || []).map(s => ({
@@ -481,6 +492,7 @@ export async function getStudentByPin(inputPin) {
   const teacher = await getTeacherById(student.teacherId || 'teacher-1');
   return {
     ...student,
+    monthlySessions: student.monthlySessions !== undefined ? Number(student.monthlySessions) : 12,
     teacherId: student.teacherId || 'teacher-1',
     teacher
   };
@@ -519,23 +531,31 @@ export async function getAllStudents(teacherId) {
       }
 
       if (!error && students) {
-        const mapped = (students || []).map(student => ({
-          id: student.id,
-          teacherId: student.teacher_id || 'teacher-1',
-          pinCode: student.pin_code,
-          accessCode: student.access_code || student.pin_code,
-          fullName: student.full_name,
-          preferredName: student.preferred_name,
-          grade: student.grade,
-          subjects: student.subjects || [],
-          parentName: student.parent_name,
-          parentPhone: student.parent_phone,
-          parentEmail: student.parent_email,
-          enrolledDate: student.enrolled_date,
-          status: student.status,
-          avatar: student.avatar,
-          learningGoals: student.learning_goals,
-          sessions: (student.sessions || []).map(s => ({
+        const localData = loadLocalData();
+        const mapped = (students || []).map(student => {
+          const localRec = (localData.students || []).find(ls => ls.id === student.id);
+          const monthlyQuota = student.monthly_sessions !== undefined && student.monthly_sessions !== null
+            ? Number(student.monthly_sessions)
+            : (localRec?.monthlySessions !== undefined ? Number(localRec.monthlySessions) : 12);
+
+          return {
+            id: student.id,
+            teacherId: student.teacher_id || 'teacher-1',
+            pinCode: student.pin_code,
+            accessCode: student.access_code || student.pin_code,
+            fullName: student.full_name,
+            preferredName: student.preferred_name,
+            grade: student.grade,
+            subjects: student.subjects || [],
+            parentName: student.parent_name,
+            parentPhone: student.parent_phone,
+            parentEmail: student.parent_email,
+            enrolledDate: student.enrolled_date,
+            status: student.status,
+            avatar: student.avatar,
+            learningGoals: student.learning_goals,
+            monthlySessions: monthlyQuota,
+            sessions: (student.sessions || []).map(s => ({
             id: s.id,
             date: s.date,
             subject: s.subject,
@@ -575,6 +595,7 @@ export async function getAllStudents(teacherId) {
   const data = loadLocalData();
   const list = (data.students || []).map(s => ({
     ...s,
+    monthlySessions: s.monthlySessions !== undefined ? Number(s.monthlySessions) : 12,
     teacherId: s.teacherId || 'teacher-1'
   }));
   if (teacherId) {
@@ -592,6 +613,7 @@ export async function createStudent(studentData) {
       pin = String(Math.floor(1000 + Math.random() * 9000));
     }
 
+    const monthlySessions = Number(studentData.monthlySessions) > 0 ? Number(studentData.monthlySessions) : 12;
     const newStudent = {
       id: `stu-${Date.now()}`,
       teacher_id: assignedTeacherId,
@@ -609,13 +631,16 @@ export async function createStudent(studentData) {
       enrolled_date: new Date().toISOString().split('T')[0],
       status: 'Active',
       avatar: studentData.avatar || 'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80',
-      learning_goals: studentData.learningGoals || 'Develop strong study habits and subject mastery.'
+      learning_goals: studentData.learningGoals || 'Develop strong study habits and subject mastery.',
+      monthly_sessions: monthlySessions
     };
 
     try {
       let { data, error } = await supabase.from('students').insert([newStudent]).select().single();
-      if (error && error.message?.includes('teacher_id')) {
-        const { teacher_id, ...fallbackStudent } = newStudent;
+      if (error && (error.message?.includes('teacher_id') || error.message?.includes('monthly_sessions'))) {
+        const fallbackStudent = { ...newStudent };
+        if (error.message?.includes('teacher_id')) delete fallbackStudent.teacher_id;
+        if (error.message?.includes('monthly_sessions')) delete fallbackStudent.monthly_sessions;
         const retry = await supabase.from('students').insert([fallbackStudent]).select().single();
         data = retry.data;
         error = retry.error;
@@ -633,6 +658,7 @@ export async function createStudent(studentData) {
           parentEmail: newStudent.parent_email,
           enrolledDate: newStudent.enrolled_date,
           learningGoals: newStudent.learning_goals,
+          monthlySessions: monthlySessions,
           sessions: [],
           reports: []
         };
@@ -648,6 +674,7 @@ export async function createStudent(studentData) {
     }
   }
 
+  const monthlySessions = Number(studentData.monthlySessions) > 0 ? Number(studentData.monthlySessions) : 12;
   const newStudent = {
     id: `stu-${Date.now()}`,
     teacherId: assignedTeacherId,
@@ -664,6 +691,7 @@ export async function createStudent(studentData) {
     status: 'Active',
     avatar: studentData.avatar || 'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80',
     learningGoals: studentData.learningGoals || 'Develop strong study habits and subject mastery.',
+    monthlySessions: monthlySessions,
     sessions: [],
     reports: []
   };
@@ -695,34 +723,68 @@ export async function updateStudent(id, studentData) {
       payload.access_code = studentData.pinCode.trim();
     }
 
-    const { data, error } = await supabase.from('students').update(payload).eq('id', id).select();
-    if (error) throw error;
-    if (!data || data.length === 0) return null;
-    const row = data[0];
-    const updatedStudent = {
-      ...row,
-      pinCode: row.pin_code,
-      accessCode: row.access_code,
-      fullName: row.full_name,
-      preferredName: row.preferred_name,
-      parentName: row.parent_name,
-      parentPhone: row.parent_phone,
-      parentEmail: row.parent_email,
-      enrolledDate: row.enrolled_date,
-      learningGoals: row.learning_goals
-    };
+    if (studentData.monthlySessions !== undefined) {
+      payload.monthly_sessions = Number(studentData.monthlySessions) > 0 ? Number(studentData.monthlySessions) : 12;
+    }
 
-    // Keep local store.json synchronized
-    try {
-      const localData = loadLocalData();
-      const sIdx = (localData.students || []).findIndex(s => s.id === id);
-      if (sIdx !== -1) {
-        localData.students[sIdx] = { ...localData.students[sIdx], ...updatedStudent };
-        saveLocalData(localData);
+    let row = null;
+    if (Object.keys(payload).length > 0) {
+      let { data, error } = await supabase.from('students').update(payload).eq('id', id).select();
+      if (error && error.message?.includes('monthly_sessions')) {
+        delete payload.monthly_sessions;
+        if (Object.keys(payload).length > 0) {
+          const retry = await supabase.from('students').update(payload).eq('id', id).select();
+          data = retry.data;
+        } else {
+          const fetchRes = await supabase.from('students').select('*').eq('id', id).maybeSingle();
+          data = fetchRes.data ? [fetchRes.data] : [];
+        }
       }
-    } catch (_) {}
+      if (data && data.length > 0) {
+        row = data[0];
+      }
+    }
 
-    return updatedStudent;
+    if (!row) {
+      const fetchRes = await supabase.from('students').select('*').eq('id', id).maybeSingle();
+      if (fetchRes.data) row = fetchRes.data;
+    }
+
+    if (row) {
+      const targetMonthlySessions = studentData.monthlySessions !== undefined
+        ? (Number(studentData.monthlySessions) > 0 ? Number(studentData.monthlySessions) : 12)
+        : (row.monthly_sessions !== undefined && row.monthly_sessions !== null ? Number(row.monthly_sessions) : 12);
+
+      const updatedStudent = {
+        ...row,
+        pinCode: row.pin_code,
+        accessCode: row.access_code,
+        fullName: row.full_name,
+        preferredName: row.preferred_name,
+        parentName: row.parent_name,
+        parentPhone: row.parent_phone,
+        parentEmail: row.parent_email,
+        enrolledDate: row.enrolled_date,
+        learningGoals: row.learning_goals,
+        monthlySessions: targetMonthlySessions
+      };
+
+      // Keep local store.json synchronized
+      try {
+        const localData = loadLocalData();
+        if (!localData.students) localData.students = [];
+        const sIdx = localData.students.findIndex(s => s.id === id);
+        if (sIdx !== -1) {
+          localData.students[sIdx] = { ...localData.students[sIdx], ...updatedStudent, monthlySessions: targetMonthlySessions };
+        } else {
+          localData.students.push(updatedStudent);
+        }
+        saveLocalData(localData);
+      } catch (_) {}
+
+      return updatedStudent;
+    }
+    return null;
   }
 
   const data = loadLocalData();
@@ -740,6 +802,7 @@ export async function updateStudent(id, studentData) {
     subjects,
     pinCode: updatedPin,
     accessCode: updatedPin,
+    monthlySessions: studentData.monthlySessions !== undefined ? (Number(studentData.monthlySessions) || 12) : (data.students[idx].monthlySessions || 12),
     id: data.students[idx].id
   };
   saveLocalData(data);
