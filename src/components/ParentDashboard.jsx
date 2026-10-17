@@ -265,22 +265,17 @@ export default function ParentDashboard({
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
-              <span className={`badge ${isMonthFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{
-                background: isMonthFinished ? 'rgba(16, 185, 129, 0.35)' : 'rgba(56, 189, 248, 0.25)',
-                color: isMonthFinished ? '#a7f3d0' : '#e0f2fe',
-                fontSize: '0.875rem',
-                fontWeight: 800,
-                padding: '0.45rem 0.9rem',
-                border: isMonthFinished ? '1px solid #10b981' : '1px solid #38bdf8',
-                letterSpacing: '0.05em'
-              }}>
-                {completedThisMonth} / {monthlyQuota} Sessions Done
-              </span>
-              <span style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>
-                {isMonthFinished ? 'All monthly sessions successfully completed' : 'Automatically decreases after each session'}
-              </span>
-            </div>
+            <span className={`badge ${isMonthFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{
+              background: isMonthFinished ? 'rgba(16, 185, 129, 0.35)' : 'rgba(56, 189, 248, 0.25)',
+              color: isMonthFinished ? '#a7f3d0' : '#e0f2fe',
+              fontSize: '0.875rem',
+              fontWeight: 800,
+              padding: '0.45rem 0.9rem',
+              border: isMonthFinished ? '1px solid #10b981' : '1px solid #38bdf8',
+              letterSpacing: '0.05em'
+            }}>
+              {completedThisMonth} / {monthlyQuota} Done
+            </span>
           </div>
 
           {/* Progress Bar */}
@@ -316,7 +311,7 @@ export default function ParentDashboard({
               return (
                 <div
                   key={idx}
-                  title={isDone ? `Session ${sessionNum} of ${monthlyQuota}: Done` : `Session ${sessionNum} of ${monthlyQuota}: Remaining`}
+                  title={isDone ? `Session ${sessionNum}: Done` : `Session ${sessionNum}: Remaining`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -337,11 +332,6 @@ export default function ParentDashboard({
                 </div>
               );
             })}
-            <div style={{ fontSize: '0.8rem', color: '#cbd5e1', marginLeft: '0.5rem', fontWeight: 600 }}>
-              {isMonthFinished 
-                ? 'All sessions for this month have been conducted.' 
-                : `${remainingThisMonth} session${remainingThisMonth === 1 ? '' : 's'} remaining until all sessions are finished this month.`}
-            </div>
           </div>
         </div>
 
@@ -567,29 +557,23 @@ export default function ParentDashboard({
           {/* Monthly Package Status in Session Logs */}
           <div style={{
             background: isMonthFinished ? '#ecfdf5' : '#eff6ff',
-            border: isMonthFinished ? '1.5px solid #86efac' : '1px solid #bfdbfe',
+            border: isMonthFinished ? '1px solid #86efac' : '1px solid #bfdbfe',
             borderRadius: 'var(--radius-md)',
-            padding: '0.85rem 1.25rem',
+            padding: '0.65rem 1rem',
             marginBottom: '1.25rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: '0.75rem'
+            gap: '0.5rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Clock size={18} color={isMonthFinished ? '#059669' : '#2563eb'} />
-              <strong style={{ fontSize: '0.9rem', color: isMonthFinished ? '#065f46' : '#1e40af' }}>
-                {currentMonthName} {currentYear} Tutoring Package:
-              </strong>
-              <span style={{ fontSize: '0.9rem', color: isMonthFinished ? '#047857' : '#1d4ed8' }}>
-                {isMonthFinished 
-                  ? `All ${monthlyQuota} monthly sessions conducted! 🎉` 
-                  : `${remainingThisMonth} of ${monthlyQuota} sessions left to complete this month (${completedThisMonth} done)`}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+              <Clock size={16} color={isMonthFinished ? '#059669' : '#2563eb'} />
+              <strong>{currentMonthName} {currentYear}:</strong>
+              <span>{completedThisMonth} of {monthlyQuota} sessions completed</span>
             </div>
             <span className={`badge ${isMonthFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{ fontWeight: 700 }}>
-              {isMonthFinished ? 'Month Complete' : `${remainingThisMonth} Remaining`}
+              {isMonthFinished ? 'Completed' : `${remainingThisMonth} Remaining`}
             </span>
           </div>
 

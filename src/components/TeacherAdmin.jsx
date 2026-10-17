@@ -2029,73 +2029,16 @@ export default function TeacherAdmin({
                 </div>
               </div>
 
-              {/* Monthly Sessions Allocation Input (Up to 12 sessions per month) */}
-              <div style={{
-                background: '#f0fdf4',
-                padding: '1.15rem 1.25rem',
-                borderRadius: 'var(--radius-md)',
-                border: '1.5px solid #86efac',
-                marginBottom: '1.25rem'
-              }}>
-                <label className="form-label" style={{ color: '#166534', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 700, marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Calendar size={16} color="#16a34a" /> Enrolled Monthly Sessions (Up to 12 Sessions / Month) *
-                  </span>
-                  <span style={{ fontSize: '0.78rem', background: '#dcfce7', color: '#15803d', padding: '0.15rem 0.6rem', borderRadius: '999px', fontWeight: 700 }}>
-                    Standard: 12 sessions
-                  </span>
-                </label>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.6rem' }}>
-                  <input
-                    type="number"
-                    min="1"
-                    max="12"
-                    className="form-input"
-                    placeholder="12"
-                    value={newStudent.monthlySessions}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === '') {
-                        setNewStudent({ ...newStudent, monthlySessions: '' });
-                      } else {
-                        const num = parseInt(val, 10);
-                        setNewStudent({ ...newStudent, monthlySessions: isNaN(num) ? 12 : Math.min(12, Math.max(1, num)) });
-                      }
-                    }}
-                    required
-                    style={{ maxWidth: '120px', fontWeight: 800, fontSize: '1.2rem', borderColor: '#86efac', background: '#ffffff', color: '#166534', textAlign: 'center' }}
-                  />
-
-                  {/* Quick Preset Buttons for 4, 8, 12 sessions */}
-                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                    {[4, 8, 12].map((count) => {
-                      const isSelected = Number(newStudent.monthlySessions) === count;
-                      return (
-                        <button
-                          key={count}
-                          type="button"
-                          className="btn btn-sm"
-                          onClick={() => setNewStudent({ ...newStudent, monthlySessions: count })}
-                          style={{
-                            background: isSelected ? '#16a34a' : '#ffffff',
-                            color: isSelected ? '#ffffff' : '#166534',
-                            border: '1px solid #86efac',
-                            fontWeight: 700,
-                            padding: '0.35rem 0.75rem',
-                            fontSize: '0.8rem'
-                          }}
-                        >
-                          {count === 12 ? '12 Sessions (Full)' : `${count} Sessions`}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div style={{ fontSize: '0.825rem', color: '#166534', lineHeight: 1.45 }}>
-                  The teacher enrolls the student for up to 12 sessions per month. The sessions count automatically decreases on the student's dashboard card as each lesson is finished until all sessions are completed in the month.
-                </div>
+              <div className="form-group">
+                <label className="form-label">Monthly Sessions</label>
+                <input
+                  type="number"
+                  min="1"
+                  className="form-input"
+                  placeholder="12"
+                  value={newStudent.monthlySessions}
+                  onChange={(e) => setNewStudent({ ...newStudent, monthlySessions: e.target.value })}
+                />
               </div>
 
               <div className="form-group">
