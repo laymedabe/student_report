@@ -72,6 +72,33 @@ export default function ParentDashboard({
   const presentCount = (student.sessions || []).filter(s => s.attendance === 'Present').length;
   const attendanceRate = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 100;
 
+  // Monthly Sessions Allowance & Automatic Countdown
+  const monthlyQuota = Number(student.monthlySessions) > 0 ? Number(student.monthlySessions) : 12;
+  const now = new Date();
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth();
+  const monthName = now.toLocaleString('default', { month: 'long' });
+
+  const monthSessions = (student.sessions || []).filter(s => {
+    if (!s.date) return false;
+    const parts = String(s.date).split('-');
+    if (parts.length >= 2) {
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      return y === curYear && m === curMonth;
+    }
+    const d = new Date(s.date);
+    return !isNaN(d.getTime()) && d.getFullYear() === curYear && d.getMonth() === curMonth;
+  });
+
+  const completedThisMonth = monthSessions.filter(
+    s => s.attendance !== 'Cancelled' && s.attendance !== 'Excused Absence'
+  ).length;
+
+  const remainingThisMonth = Math.max(0, monthlyQuota - completedThisMonth);
+  const isMonthFinished = remainingThisMonth === 0;
+  const monthPercent = Math.min(100, Math.round((completedThisMonth / monthlyQuota) * 100));
+
   const displayPin = student.pinCode || student.accessCode;
 
   return (
@@ -169,6 +196,71 @@ export default function ParentDashboard({
             </div>
           </div>
 
+          {/* Monthly Sessions Package Countdown Widget */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.12)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
+            borderRadius: '16px',
+            padding: '1rem 1.25rem',
+            color: 'white',
+            minWidth: '260px',
+            maxWidth: '360px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e0e7ff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Calendar size={15} color="#fbbf24" />
+                {monthName} Package
+              </span>
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                padding: '0.2rem 0.55rem',
+                borderRadius: '12px',
+                background: isMonthFinished ? '#10b981' : 'rgba(255, 255, 255, 0.2)',
+                color: 'white'
+              }}>
+                {isMonthFinished ? 'All Done! 🎉' : `${remainingThisMonth} Left`}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: isMonthFinished ? '#34d399' : '#ffffff' }}>
+                {remainingThisMonth}
+              </span>
+              <span style={{ fontSize: '0.95rem', color: '#c7d2fe', fontWeight: 500 }}>
+                of {monthlyQuota} sessions left
+              </span>
+            </div>
+
+            {/* Progress Bar */}
+            <div style={{
+              width: '100%',
+              height: '8px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '999px',
+              overflow: 'hidden',
+              marginBottom: '0.35rem'
+            }}>
+              <div style={{
+                width: `${monthPercent}%`,
+                height: '100%',
+                background: isMonthFinished ? '#10b981' : '#fbbf24',
+                borderRadius: '999px',
+                transition: 'width 0.4s ease'
+              }} />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#e0e7ff' }}>
+              <span>{completedThisMonth} conducted</span>
+              <span>{monthPercent}% completed</span>
+            </div>
+          </div>
+
           <div className="hero-actions no-print">
             <button
               className="btn btn-secondary btn-sm"
@@ -215,8 +307,8 @@ export default function ParentDashboard({
             <Calendar size={26} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{totalSessions}</div>
-            <div className="stat-label">Sessions Completed</div>
+            <div className="stat-value">{remainingThisMonth} / {monthlyQuota}</div>
+            <div className="stat-label">Sessions Left ({monthName})</div>
           </div>
         </div>
 
@@ -404,6 +496,57 @@ export default function ParentDashboard({
           ======================================================== */}
       {activeTab === 'sessions' && (
         <div>
+          {/* Monthly Package Allowance Status Banner */}
+          <div style={{
+            background: 'linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)',
+            border: '1px solid #c7d2fe',
+            borderRadius: 'var(--radius-lg)',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                background: 'var(--primary)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <Calendar size={20} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                  {monthName} Sessions Package: {remainingThisMonth} of {monthlyQuota} Remaining
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {completedThisMonth} session{completedThisMonth === 1 ? '' : 's'} completed this month • {isMonthFinished ? 'Monthly goal achieved! 🎉' : `${remainingThisMonth} remaining to complete`}
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              fontWeight: 800,
+              fontSize: '1.1rem',
+              color: isMonthFinished ? '#059669' : 'var(--primary)',
+              background: 'white',
+              padding: '0.4rem 0.85rem',
+              borderRadius: '999px',
+              border: '1px solid #e0e7ff',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.03)'
+            }}>
+              {completedThisMonth} / {monthlyQuota} Done
+            </div>
+          </div>
+
           {/* Filter Bar */}
           <div style={{
             display: 'flex',

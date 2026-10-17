@@ -86,7 +86,8 @@ export default function TeacherAdmin({
     parentEmail: '',
     learningGoals: '',
     avatar: '',
-    pinCode: ''
+    pinCode: '',
+    monthlySessions: 12
   });
 
   const [newSession, setNewSession] = useState({
@@ -279,7 +280,8 @@ export default function TeacherAdmin({
       parentEmail: '',
       learningGoals: '',
       avatar: '',
-      pinCode: autoPin
+      pinCode: autoPin,
+      monthlySessions: 12
     });
     setShowAddStudentModal(true);
   };
@@ -297,7 +299,8 @@ export default function TeacherAdmin({
       parentEmail: stu.parentEmail || '',
       learningGoals: stu.learningGoals || '',
       avatar: stu.avatar || '',
-      pinCode: stu.pinCode || stu.accessCode || ''
+      pinCode: stu.pinCode || stu.accessCode || '',
+      monthlySessions: stu.monthlySessions !== undefined && stu.monthlySessions !== null ? Number(stu.monthlySessions) : 12
     });
     setShowAddStudentModal(true);
   };
@@ -322,11 +325,18 @@ export default function TeacherAdmin({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newStudent,
+          monthlySessions: Number(newStudent.monthlySessions) > 0 ? Number(newStudent.monthlySessions) : 12,
           teacherId: currentTeacher?.id || 'teacher-1'
         })
       });
-      const data = await res.json();
-      if (data.success) {
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (_) {
+        data = { success: false, message: 'Server connection error. Please ensure the backend is running.' };
+      }
+
+      if (res.ok && data.success) {
         setShowAddStudentModal(false);
         setEditingStudentId(null);
         setNewStudent({
@@ -339,7 +349,8 @@ export default function TeacherAdmin({
           parentEmail: '',
           learningGoals: '',
           avatar: '',
-          pinCode: ''
+          pinCode: '',
+          monthlySessions: 12
         });
         onRefreshData();
         const pin = data.student?.pinCode || data.student?.accessCode || newStudent.pinCode;
@@ -354,12 +365,12 @@ export default function TeacherAdmin({
           setAdminView('student-detail');
         }
       } else {
-        onShowToast({ type: 'error', message: data.message || 'Error saving student' });
+        onShowToast({ type: 'error', message: data.message || (editingStudentId ? 'Failed to update student profile' : 'Failed to create student') });
       }
     } catch (err) {
       onShowToast({
         type: 'error',
-        message: editingStudentId ? 'Failed to update student profile' : 'Failed to create student'
+        message: err.message || (editingStudentId ? 'Failed to update student profile' : 'Failed to create student')
       });
     }
   };
@@ -959,6 +970,37 @@ export default function TeacherAdmin({
     );
   }
 
+  // Monthly Sessions Calculation Helper (decreases as sessions in current month are done/finished)
+  const calcMonthlySessions = (stu) => {
+    const quota = Number(stu?.monthlySessions) > 0 ? Number(stu.monthlySessions) : 12;
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth();
+    const monthName = now.toLocaleString('default', { month: 'long' });
+
+    const monthSessions = (stu?.sessions || []).filter(s => {
+      if (!s.date) return false;
+      const parts = String(s.date).split('-');
+      if (parts.length >= 2) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        return y === curYear && m === curMonth;
+      }
+      const d = new Date(s.date);
+      return !isNaN(d.getTime()) && d.getFullYear() === curYear && d.getMonth() === curMonth;
+    });
+
+    const completedThisMonth = monthSessions.filter(
+      s => s.attendance !== 'Cancelled' && s.attendance !== 'Excused Absence'
+    ).length;
+
+    const remaining = Math.max(0, quota - completedThisMonth);
+    const isFinished = remaining === 0;
+    const percent = Math.min(100, Math.round((completedThisMonth / quota) * 100));
+
+    return { quota, completedThisMonth, remaining, isFinished, percent, monthName, curYear };
+  };
+
   // -------------------------------------------------------------
   // VIEW: AUTHENTICATED TEACHER ADMIN WORKSPACE
   // -------------------------------------------------------------
@@ -1212,14 +1254,37 @@ export default function TeacherAdmin({
                         </td>
 
                         <td>
-                          <div style={{ fontSize: '0.85rem' }}>
-                            <span>{stu.sessions?.length || 0} sessions logged</span>
-                          </div>
-                          {stu.reports?.length > 0 ? (
-                            <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>Report Card Ready</span>
-                          ) : (
-                            <span className="badge badge-amber" style={{ fontSize: '0.65rem' }}>Pending Report</span>
-                          )}
+                          {(() => {
+                            const monthStats = calcMonthlySessions(stu);
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <span 
+                                  className={`badge ${monthStats.isFinished ? 'badge-emerald' : 'badge-indigo'}`}
+                                  style={{ 
+                                    fontWeight: 700, 
+                                    fontSize: '0.78rem', 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    gap: '0.3rem', 
+                                    width: 'fit-content' 
+                                  }}
+                                  title={`${monthStats.completedThisMonth} of ${monthStats.quota} sessions completed in ${monthStats.monthName}`}
+                                >
+                                  {monthStats.isFinished 
+                                    ? `✓ All ${monthStats.quota} done (${monthStats.monthName})` 
+                                    : `${monthStats.remaining} of ${monthStats.quota} left (${monthStats.monthName})`}
+                                </span>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                  {stu.sessions?.length || 0} total sessions logged
+                                </div>
+                                {stu.reports?.length > 0 ? (
+                                  <span className="badge badge-emerald" style={{ fontSize: '0.65rem', width: 'fit-content' }}>Report Card Ready</span>
+                                ) : (
+                                  <span className="badge badge-amber" style={{ fontSize: '0.65rem', width: 'fit-content' }}>Pending Report</span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         <td style={{ textAlign: 'right' }}>
@@ -1350,6 +1415,52 @@ export default function TeacherAdmin({
                 </button>
               </div>
             </div>
+
+            {/* Monthly Sessions Progress Bar in Student Detail Banner */}
+            {(() => {
+              const activeMonthStats = calcMonthlySessions(activeStudent);
+              return (
+                <div style={{
+                  marginTop: '1.25rem',
+                  padding: '1rem 1.25rem',
+                  background: '#ffffff',
+                  borderRadius: 'var(--radius-md)',
+                  border: activeMonthStats.isFinished ? '1.5px solid #86efac' : '1px solid var(--border-light)',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span className={`badge ${activeMonthStats.isFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{ fontWeight: 800, fontSize: '0.825rem' }}>
+                        {activeMonthStats.monthName} Package: {activeMonthStats.quota} Sessions / Month
+                      </span>
+                      <strong style={{ fontSize: '0.95rem', color: activeMonthStats.isFinished ? '#15803d' : 'var(--primary)' }}>
+                        {activeMonthStats.isFinished 
+                          ? `🎉 All ${activeMonthStats.quota} sessions completed for ${activeMonthStats.monthName}!` 
+                          : `${activeMonthStats.remaining} sessions remaining (${activeMonthStats.completedThisMonth} done)`}
+                      </strong>
+                    </div>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      style={{ fontSize: '0.8rem', color: 'var(--primary)', padding: '0.2rem 0.5rem' }}
+                      onClick={() => handleOpenEditStudent(activeStudent)}
+                      title="Adjust monthly sessions quota"
+                    >
+                      <Edit3 size={13} /> Change Monthly Quota
+                    </button>
+                  </div>
+
+                  <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${activeMonthStats.percent}%`,
+                      height: '100%',
+                      background: activeMonthStats.isFinished ? '#10b981' : 'var(--primary)',
+                      borderRadius: '999px',
+                      transition: 'width 0.4s ease'
+                    }} />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Sessions List */}
@@ -1936,6 +2047,19 @@ export default function TeacherAdmin({
                     style={{ fontWeight: 700, letterSpacing: '0.08em' }}
                   />
                 </div>
+              </div>
+
+              {/* Simple Monthly Sessions Input */}
+              <div className="form-group">
+                <label className="form-label">Monthly Sessions</label>
+                <input
+                  type="number"
+                  min="1"
+                  className="form-input"
+                  placeholder="12"
+                  value={newStudent.monthlySessions}
+                  onChange={(e) => setNewStudent({ ...newStudent, monthlySessions: e.target.value })}
+                />
               </div>
 
               <div className="form-group">

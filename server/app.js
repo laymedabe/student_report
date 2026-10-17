@@ -173,14 +173,16 @@ app.get('/api/students', async (req, res) => {
 app.post('/api/students', async (req, res) => {
   try {
     const { fullName } = req.body;
-    if (!fullName) {
-      return res.status(400).json({ success: false, message: 'Student name is required' });
+    if (!fullName || !fullName.trim()) {
+      return res.status(400).json({ success: false, message: 'Student full name is required' });
     }
     const teacherId = req.body.teacherId || req.headers['x-teacher-id'] || 'teacher-1';
     const student = await db.createStudent({ ...req.body, teacherId });
     res.status(201).json({ success: true, student });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error('Error creating student:', err.message);
+    const status = err.message?.includes('already') || err.message?.includes('required') ? 400 : 500;
+    res.status(status).json({ success: false, message: err.message });
   }
 });
 

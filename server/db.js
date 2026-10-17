@@ -12,6 +12,29 @@ const __dirname = path.dirname(__filename);
 // Storage fallback paths for local development
 const DATA_DIR = path.join(__dirname, 'data');
 const STORE_PATH = path.join(DATA_DIR, 'store.json');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+} catch (_) { }
+
+export function saveBase64Avatar(avatarString) {
+  if (!avatarString || typeof avatarString !== 'string' || !avatarString.startsWith('data:image')) {
+    return avatarString;
+  }
+  try {
+    const matches = avatarString.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+    if (!matches) return avatarString;
+    const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+    const filename = `avatar-${Date.now()}-${Math.round(Math.random() * 1e6)}.${ext}`;
+    if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
+    return `/uploads/${filename}`;
+  } catch (err) {
+    console.error('Error saving base64 avatar:', err);
+    return avatarString;
+  }
+}
 
 // Supabase environment variables
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -317,81 +340,90 @@ export async function updateCenterInfo(updateData) {
 // -------------------------------------------------------------
 export async function getStudentByPin(inputPin) {
   const pin = (inputPin || '').trim().toUpperCase();
+  const localData = loadLocalData();
 
   if (isSupabaseConfigured) {
-    // Look up student
-    const { data: student, error } = await supabase
-      .from('students')
-      .select('*')
-      .or(`pin_code.eq.${pin},access_code.eq.${pin}`)
-      .limit(1)
-      .maybeSingle();
+    try {
+      // Look up student in Supabase
+      const { data: student, error } = await supabase
+        .from('students')
+        .select('*')
+        .or(`pin_code.eq.${pin},access_code.eq.${pin}`)
+        .limit(1)
+        .maybeSingle();
 
-    if (error || !student) return null;
+      if (!error && student) {
+        // Fetch related sessions
+        const { data: sessions } = await supabase
+          .from('sessions')
+          .select('*')
+          .eq('student_id', student.id)
+          .order('date', { ascending: false });
 
-    // Fetch related sessions
-    const { data: sessions } = await supabase
-      .from('sessions')
-      .select('*')
-      .eq('student_id', student.id)
-      .order('date', { ascending: false });
+        // Fetch related reports
+        const { data: reports } = await supabase
+          .from('reports')
+          .select('*')
+          .eq('student_id', student.id)
+          .order('issue_date', { ascending: false });
 
-    // Fetch related reports
-    const { data: reports } = await supabase
-      .from('reports')
-      .select('*')
-      .eq('student_id', student.id)
-      .order('issue_date', { ascending: false });
+        const localRec = (localData.students || []).find(ls => ls.id === student.id);
+        const monthlyQuota = student.monthly_sessions !== undefined && student.monthly_sessions !== null
+          ? Number(student.monthly_sessions)
+          : (localRec?.monthlySessions !== undefined ? Number(localRec.monthlySessions) : 12);
 
-    return {
-      id: student.id,
-      pinCode: student.pin_code,
-      accessCode: student.access_code || student.pin_code,
-      fullName: student.full_name,
-      preferredName: student.preferred_name,
-      grade: student.grade,
-      subjects: student.subjects || [],
-      parentName: student.parent_name,
-      parentPhone: student.parent_phone,
-      parentEmail: student.parent_email,
-      enrolledDate: student.enrolled_date,
-      status: student.status,
-      avatar: student.avatar,
-      learningGoals: student.learning_goals,
-      teacherId: student.teacher_id || 'teacher-1',
-      teacher: await getTeacherById(student.teacher_id || 'teacher-1'),
-      sessions: (sessions || []).map(s => ({
-        id: s.id,
-        date: s.date,
-        subject: s.subject,
-        topic: s.topic,
-        duration: s.duration,
-        attendance: s.attendance,
-        rating: s.rating,
-        badge: s.badge,
-        tutorNotes: s.tutor_notes,
-        homework: s.homework,
-        nextSteps: s.next_steps
-      })),
-      reports: (reports || []).map(r => ({
-        id: r.id,
-        title: r.title,
-        period: r.period,
-        issueDate: r.issue_date,
-        overallGrade: r.overall_grade,
-        attendanceRate: r.attendance_rate,
-        behaviorRating: r.behavior_rating,
-        subjectEvaluations: r.subject_evaluations || [],
-        strengths: r.strengths || [],
-        areasForGrowth: r.areas_for_growth || [],
-        tutorSummary: r.tutor_summary,
-        teacherSignature: r.teacher_signature
-      }))
-    };
+        return {
+          id: student.id,
+          pinCode: student.pin_code,
+          accessCode: student.access_code || student.pin_code,
+          fullName: student.full_name,
+          preferredName: student.preferred_name,
+          grade: student.grade,
+          subjects: student.subjects || [],
+          parentName: student.parent_name,
+          parentPhone: student.parent_phone,
+          parentEmail: student.parent_email,
+          enrolledDate: student.enrolled_date,
+          status: student.status,
+          avatar: student.avatar,
+          learningGoals: student.learning_goals,
+          monthlySessions: monthlyQuota,
+          teacherId: student.teacher_id || 'teacher-1',
+          teacher: await getTeacherById(student.teacher_id || 'teacher-1'),
+          sessions: (sessions || []).map(s => ({
+            id: s.id,
+            date: s.date,
+            subject: s.subject,
+            topic: s.topic,
+            duration: s.duration,
+            attendance: s.attendance,
+            rating: s.rating,
+            badge: s.badge,
+            tutorNotes: s.tutor_notes,
+            homework: s.homework,
+            nextSteps: s.next_steps
+          })),
+          reports: (reports || []).map(r => ({
+            id: r.id,
+            title: r.title,
+            period: r.period,
+            issueDate: r.issue_date,
+            overallGrade: r.overall_grade,
+            attendanceRate: r.attendance_rate,
+            behaviorRating: r.behavior_rating,
+            subjectEvaluations: r.subject_evaluations || [],
+            strengths: r.strengths || [],
+            areasForGrowth: r.areas_for_growth || [],
+            tutorSummary: r.tutor_summary,
+            teacherSignature: r.teacher_signature
+          }))
+        };
+      }
+    } catch (_) { }
   }
 
-  const data = loadLocalData();
-  const student = data.students.find(s =>
+  // Fallback to local store.json
+  const student = (localData.students || []).find(s =>
     (s.pinCode && s.pinCode.toUpperCase() === pin) ||
     (s.accessCode && s.accessCode.toUpperCase() === pin)
   );
@@ -400,12 +432,15 @@ export async function getStudentByPin(inputPin) {
   const teacher = await getTeacherById(student.teacherId || 'teacher-1');
   return {
     ...student,
+    monthlySessions: student.monthlySessions !== undefined ? Number(student.monthlySessions) : 12,
     teacherId: student.teacherId || 'teacher-1',
     teacher
   };
 }
 
 export async function getAllStudents(teacherId) {
+  const localData = loadLocalData();
+
   if (isSupabaseConfigured) {
     try {
       let query = supabase
@@ -438,50 +473,73 @@ export async function getAllStudents(teacherId) {
       }
 
       if (!error && students) {
-        const mapped = (students || []).map(student => ({
-          id: student.id,
-          teacherId: student.teacher_id || 'teacher-1',
-          pinCode: student.pin_code,
-          accessCode: student.access_code || student.pin_code,
-          fullName: student.full_name,
-          preferredName: student.preferred_name,
-          grade: student.grade,
-          subjects: student.subjects || [],
-          parentName: student.parent_name,
-          parentPhone: student.parent_phone,
-          parentEmail: student.parent_email,
-          enrolledDate: student.enrolled_date,
-          status: student.status,
-          avatar: student.avatar,
-          learningGoals: student.learning_goals,
-          sessions: (student.sessions || []).map(s => ({
-            id: s.id,
-            date: s.date,
-            subject: s.subject,
-            topic: s.topic,
-            duration: s.duration,
-            attendance: s.attendance,
-            rating: s.rating,
-            badge: s.badge,
-            tutorNotes: s.tutor_notes,
-            homework: s.homework,
-            nextSteps: s.next_steps
-          })),
-          reports: (student.reports || []).map(r => ({
-            id: r.id,
-            title: r.title,
-            period: r.period,
-            issueDate: r.issue_date,
-            overallGrade: r.overall_grade,
-            attendanceRate: r.attendance_rate,
-            behaviorRating: r.behavior_rating,
-            subjectEvaluations: r.subject_evaluations || [],
-            strengths: r.strengths || [],
-            areasForGrowth: r.areas_for_growth || [],
-            tutorSummary: r.tutor_summary,
-            teacherSignature: r.teacher_signature
-          }))
-        }));
+        const mapped = (students || []).map(student => {
+          const localRec = (localData.students || []).find(ls => ls.id === student.id);
+          const monthlyQuota = student.monthly_sessions !== undefined && student.monthly_sessions !== null
+            ? Number(student.monthly_sessions)
+            : (localRec?.monthlySessions !== undefined ? Number(localRec.monthlySessions) : 12);
+
+          return {
+            id: student.id,
+            teacherId: student.teacher_id || localRec?.teacherId || 'teacher-1',
+            pinCode: student.pin_code,
+            accessCode: student.access_code || student.pin_code,
+            fullName: student.full_name,
+            preferredName: student.preferred_name,
+            grade: student.grade,
+            subjects: student.subjects || [],
+            parentName: student.parent_name,
+            parentPhone: student.parent_phone,
+            parentEmail: student.parent_email,
+            enrolledDate: student.enrolled_date,
+            status: student.status,
+            avatar: student.avatar,
+            learningGoals: student.learning_goals,
+            monthlySessions: monthlyQuota,
+            sessions: (student.sessions || []).map(s => ({
+              id: s.id,
+              date: s.date,
+              subject: s.subject,
+              topic: s.topic,
+              duration: s.duration,
+              attendance: s.attendance,
+              rating: s.rating,
+              badge: s.badge,
+              tutorNotes: s.tutor_notes,
+              homework: s.homework,
+              nextSteps: s.next_steps
+            })),
+            reports: (student.reports || []).map(r => ({
+              id: r.id,
+              title: r.title,
+              period: r.period,
+              issueDate: r.issue_date,
+              overallGrade: r.overall_grade,
+              attendanceRate: r.attendance_rate,
+              behaviorRating: r.behavior_rating,
+              subjectEvaluations: r.subject_evaluations || [],
+              strengths: r.strengths || [],
+              areasForGrowth: r.areas_for_growth || [],
+              tutorSummary: r.tutor_summary,
+              teacherSignature: r.teacher_signature
+            }))
+          };
+        });
+
+        // Merge any local students that aren't yet in Supabase
+        const remoteIds = new Set(mapped.map(s => s.id));
+        const remotePins = new Set(mapped.map(s => s.pinCode));
+        for (const localStu of (localData.students || [])) {
+          if (!remoteIds.has(localStu.id) && !remotePins.has(localStu.pinCode)) {
+            mapped.push({
+              ...localStu,
+              monthlySessions: localStu.monthlySessions !== undefined ? Number(localStu.monthlySessions) : 12,
+              teacherId: localStu.teacherId || 'teacher-1',
+              sessions: localStu.sessions || [],
+              reports: localStu.reports || []
+            });
+          }
+        }
 
         if (teacherId) {
           return mapped.filter(s => s.teacherId === teacherId);
@@ -491,9 +549,9 @@ export async function getAllStudents(teacherId) {
     } catch (_) { }
   }
 
-  const data = loadLocalData();
-  const list = (data.students || []).map(s => ({
+  const list = (localData.students || []).map(s => ({
     ...s,
+    monthlySessions: s.monthlySessions !== undefined ? Number(s.monthlySessions) : 12,
     teacherId: s.teacherId || 'teacher-1'
   }));
   if (teacherId) {
@@ -505,94 +563,108 @@ export async function getAllStudents(teacherId) {
 export async function createStudent(studentData) {
   let pin = (studentData.pinCode || '').trim();
   const assignedTeacherId = studentData.teacherId || 'teacher-1';
+  const monthlySessions = Number(studentData.monthlySessions) > 0 ? Number(studentData.monthlySessions) : 12;
+  const processedAvatar = saveBase64Avatar(studentData.avatar) || 'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80';
 
-  if (isSupabaseConfigured) {
-    if (!pin) {
-      pin = String(Math.floor(1000 + Math.random() * 9000));
+  const localData = loadLocalData();
+  if (!localData.students) localData.students = [];
+
+  // Validate or generate unique PIN
+  if (pin) {
+    const existingLocal = localData.students.find(s => s.pinCode === pin || s.accessCode === pin);
+    if (existingLocal) {
+      throw new Error(`Student PIN "${pin}" is already used by ${existingLocal.fullName || 'another student'}. Please choose a different PIN.`);
     }
-
-    const newStudent = {
-      id: `stu-${Date.now()}`,
-      teacher_id: assignedTeacherId,
-      pin_code: pin,
-      access_code: pin,
-      full_name: studentData.fullName.trim(),
-      preferred_name: (studentData.preferredName || studentData.fullName.split(' ')[0]).trim(),
-      grade: studentData.grade || 'Grade 1',
-      subjects: Array.isArray(studentData.subjects)
-        ? studentData.subjects
-        : (studentData.subjects ? studentData.subjects.split(',').map(s => s.trim()) : ['General Tutoring']),
-      parent_name: studentData.parentName || 'Parent / Guardian',
-      parent_phone: studentData.parentPhone || '',
-      parent_email: studentData.parentEmail || '',
-      enrolled_date: new Date().toISOString().split('T')[0],
-      status: 'Active',
-      avatar: studentData.avatar || 'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80',
-      learning_goals: studentData.learningGoals || 'Develop strong study habits and subject mastery.'
-    };
-
-    try {
-      let { data, error } = await supabase.from('students').insert([newStudent]).select().single();
-      if (error && error.message?.includes('teacher_id')) {
-        const { teacher_id, ...fallbackStudent } = newStudent;
-        const retry = await supabase.from('students').insert([fallbackStudent]).select().single();
-        data = retry.data;
-        error = retry.error;
-      }
-      if (!error && data) {
-        return {
-          ...newStudent,
-          teacherId: assignedTeacherId,
-          pinCode: newStudent.pin_code,
-          accessCode: newStudent.access_code,
-          fullName: newStudent.full_name,
-          preferredName: newStudent.preferred_name,
-          parentName: newStudent.parent_name,
-          parentPhone: newStudent.parent_phone,
-          parentEmail: newStudent.parent_email,
-          enrolledDate: newStudent.enrolled_date,
-          learningGoals: newStudent.learning_goals,
-          sessions: [],
-          reports: []
-        };
-      }
-    } catch (_) { }
-  }
-
-  const data = loadLocalData();
-  if (!pin) {
+  } else {
     pin = String(Math.floor(1000 + Math.random() * 9000));
-    while (data.students.some(s => s.pinCode === pin)) {
+    while (localData.students.some(s => s.pinCode === pin || s.accessCode === pin)) {
       pin = String(Math.floor(1000 + Math.random() * 9000));
     }
   }
 
-  const newStudent = {
+  const studentRecord = {
     id: `stu-${Date.now()}`,
     teacherId: assignedTeacherId,
     pinCode: pin,
     accessCode: pin,
-    fullName: studentData.fullName.trim(),
-    preferredName: (studentData.preferredName || studentData.fullName.split(' ')[0]).trim(),
+    fullName: (studentData.fullName || '').trim(),
+    preferredName: (studentData.preferredName || studentData.fullName?.split(' ')[0] || '').trim(),
     grade: studentData.grade || 'Grade 1',
-    subjects: Array.isArray(studentData.subjects) ? studentData.subjects : (studentData.subjects ? studentData.subjects.split(',').map(s => s.trim()) : ['General Tutoring']),
+    subjects: Array.isArray(studentData.subjects)
+      ? studentData.subjects
+      : (studentData.subjects ? studentData.subjects.split(',').map(s => s.trim()).filter(Boolean) : ['General Tutoring']),
     parentName: studentData.parentName || 'Parent / Guardian',
     parentPhone: studentData.parentPhone || '',
     parentEmail: studentData.parentEmail || '',
     enrolledDate: new Date().toISOString().split('T')[0],
     status: 'Active',
-    avatar: studentData.avatar || 'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80',
+    avatar: processedAvatar,
     learningGoals: studentData.learningGoals || 'Develop strong study habits and subject mastery.',
+    monthlySessions: monthlySessions,
     sessions: [],
     reports: []
   };
 
-  data.students.unshift(newStudent);
-  saveLocalData(data);
-  return newStudent;
+  // Attempt Supabase insert if configured
+  if (isSupabaseConfigured) {
+    try {
+      const supabasePayload = {
+        id: studentRecord.id,
+        teacher_id: assignedTeacherId,
+        pin_code: studentRecord.pinCode,
+        access_code: studentRecord.accessCode,
+        full_name: studentRecord.fullName,
+        preferred_name: studentRecord.preferredName,
+        grade: studentRecord.grade,
+        subjects: studentRecord.subjects,
+        parent_name: studentRecord.parentName,
+        parent_phone: studentRecord.parentPhone,
+        parent_email: studentRecord.parentEmail,
+        enrolled_date: studentRecord.enrolledDate,
+        status: studentRecord.status,
+        avatar: studentRecord.avatar,
+        learning_goals: studentRecord.learningGoals
+      };
+
+      let { data, error } = await supabase.from('students').insert([supabasePayload]).select().single();
+
+      if (error && (error.code === '23503' || error.message?.includes('teacher_id'))) {
+        delete supabasePayload.teacher_id;
+        const retry = await supabase.from('students').insert([supabasePayload]).select().single();
+        data = retry.data;
+        error = retry.error;
+      }
+
+      if (error && error.code === '23505') {
+        throw new Error(`Student PIN "${pin}" is already registered in the database. Please choose a different PIN.`);
+      }
+
+      if (error) {
+        console.warn('Supabase student insert notice (persisting locally):', error.message || error);
+      }
+    } catch (err) {
+      if (err.message?.includes('already registered') || err.message?.includes('already used')) {
+        throw err;
+      }
+      console.warn('Supabase student insert error (persisting locally):', err.message || err);
+    }
+  }
+
+  // Always save locally to ensure 100% persistence
+  localData.students.unshift(studentRecord);
+  saveLocalData(localData);
+
+  return studentRecord;
 }
 
 export async function updateStudent(id, studentData) {
+  const targetMonthly = studentData.monthlySessions !== undefined
+    ? (Number(studentData.monthlySessions) > 0 ? Number(studentData.monthlySessions) : 12)
+    : undefined;
+
+  const processedAvatar = studentData.avatar ? saveBase64Avatar(studentData.avatar) : undefined;
+  let updatedStudent = null;
+
   if (isSupabaseConfigured) {
     const payload = {};
     if (studentData.fullName) payload.full_name = studentData.fullName.trim();
@@ -608,73 +680,80 @@ export async function updateStudent(id, studentData) {
     if (studentData.parentEmail !== undefined) payload.parent_email = studentData.parentEmail;
     if (studentData.status !== undefined) payload.status = studentData.status;
     if (studentData.learningGoals !== undefined) payload.learning_goals = studentData.learningGoals;
-    if (studentData.avatar !== undefined) payload.avatar = studentData.avatar;
+    if (processedAvatar !== undefined) payload.avatar = processedAvatar;
     if (studentData.pinCode) {
       payload.pin_code = studentData.pinCode.trim();
       payload.access_code = studentData.pinCode.trim();
     }
 
-    const { data, error } = await supabase.from('students').update(payload).eq('id', id).select();
-    if (error) throw error;
-    if (!data || data.length === 0) return null;
-    const row = data[0];
-    const updatedStudent = {
-      ...row,
-      pinCode: row.pin_code,
-      accessCode: row.access_code,
-      fullName: row.full_name,
-      preferredName: row.preferred_name,
-      parentName: row.parent_name,
-      parentPhone: row.parent_phone,
-      parentEmail: row.parent_email,
-      enrolledDate: row.enrolled_date,
-      learningGoals: row.learning_goals
-    };
-
-    // Keep local store.json synchronized
     try {
-      const localData = loadLocalData();
-      const sIdx = (localData.students || []).findIndex(s => s.id === id);
-      if (sIdx !== -1) {
-        localData.students[sIdx] = { ...localData.students[sIdx], ...updatedStudent };
-        saveLocalData(localData);
+      if (Object.keys(payload).length > 0) {
+        let { data, error } = await supabase.from('students').update(payload).eq('id', id).select();
+        if (!error && data && data.length > 0) {
+          const row = data[0];
+          updatedStudent = {
+            ...row,
+            pinCode: row.pin_code,
+            accessCode: row.access_code,
+            fullName: row.full_name,
+            preferredName: row.preferred_name,
+            parentName: row.parent_name,
+            parentPhone: row.parent_phone,
+            parentEmail: row.parent_email,
+            enrolledDate: row.enrolled_date,
+            learningGoals: row.learning_goals,
+            monthlySessions: targetMonthly !== undefined ? targetMonthly : (row.monthly_sessions || 12)
+          };
+        }
       }
-    } catch (_) { }
-
-    return updatedStudent;
+    } catch (_) {}
   }
 
+  // Update in local store.json
   const data = loadLocalData();
+  if (!data.students) data.students = [];
   const idx = data.students.findIndex(s => s.id === id);
-  if (idx === -1) return null;
 
   const subjects = studentData.subjects !== undefined
     ? (Array.isArray(studentData.subjects) ? studentData.subjects : (typeof studentData.subjects === 'string' ? studentData.subjects.split(',').map(s => s.trim()).filter(Boolean) : studentData.subjects))
-    : data.students[idx].subjects;
+    : (idx !== -1 ? data.students[idx].subjects : ['General Tutoring']);
 
-  const updatedPin = studentData.pinCode || studentData.accessCode || data.students[idx].pinCode;
-  data.students[idx] = {
-    ...data.students[idx],
+  const updatedPin = studentData.pinCode || studentData.accessCode || (idx !== -1 ? data.students[idx].pinCode : '');
+
+  const localRecord = {
+    ...(idx !== -1 ? data.students[idx] : {}),
+    ...(updatedStudent || {}),
     ...studentData,
+    avatar: processedAvatar || (idx !== -1 ? data.students[idx].avatar : studentData.avatar),
     subjects,
     pinCode: updatedPin,
     accessCode: updatedPin,
-    id: data.students[idx].id
+    monthlySessions: targetMonthly !== undefined ? targetMonthly : (idx !== -1 ? (data.students[idx].monthlySessions || 12) : 12),
+    id
   };
+
+  if (idx !== -1) {
+    data.students[idx] = localRecord;
+  } else {
+    data.students.push(localRecord);
+  }
   saveLocalData(data);
-  return data.students[idx];
+
+  return localRecord;
 }
 
 export async function deleteStudent(id) {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from('students').delete().eq('id', id);
-    if (error) throw error;
-    return true;
+    try {
+      await supabase.from('students').delete().eq('id', id);
+    } catch (_) {}
   }
 
   const data = loadLocalData();
-  data.students = data.students.filter(s => s.id !== id);
-  saveLocalData(data);
+  if (data.students) {
+    data.students = data.students.filter(s => s.id !== id);
+    saveLocalData(data);
+  }
   return true;
 }
 
