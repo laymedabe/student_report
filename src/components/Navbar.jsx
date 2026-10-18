@@ -1,10 +1,10 @@
 import React from 'react';
 import { GraduationCap, ShieldCheck, UserCheck, ArrowLeft } from 'lucide-react';
 
-export default function Navbar({ 
-  currentMode, 
-  onSwitchMode, 
-  centerName, 
+export default function Navbar({
+  currentMode,
+  onSwitchMode,
+  centerName,
   onGoHome,
   isTeacherPreview = false,
   onExitPreview
@@ -13,9 +13,9 @@ export default function Navbar({
     <header className="top-nav no-print">
       <div className="nav-content">
         {/* Brand */}
-        <div 
-          className="brand-badge" 
-          onClick={onGoHome} 
+        <div
+          className="brand-badge"
+          onClick={onGoHome}
           style={{ cursor: 'pointer' }}
         >
           <div className="brand-icon">
@@ -34,7 +34,7 @@ export default function Navbar({
         {/* Mode switch */}
         <div className="nav-actions">
           {isTeacherPreview ? (
-            <button 
+            <button
               className="btn btn-secondary nav-mode-btn"
               onClick={onExitPreview}
               style={{
@@ -50,24 +50,24 @@ export default function Navbar({
               <span className="nav-btn-text-mobile">Admin</span>
             </button>
           ) : currentMode === 'teacher' ? (
-            <button 
+            <button
               className="btn btn-primary nav-mode-btn"
               onClick={() => onSwitchMode('parent')}
               aria-label="Switch to Parent Portal View"
             >
               <UserCheck size={16} />
-              <span className="nav-btn-text-full">Parent Portal View</span>
-              <span className="nav-btn-text-mobile">Parent View</span>
+              <span className="nav-btn-text-full">Parent Portal</span>
+              <span className="nav-btn-text-mobile"></span>
             </button>
           ) : (
-            <button 
+            <button
               className="btn btn-secondary nav-mode-btn"
               onClick={() => onSwitchMode('teacher')}
               aria-label="Switch to Teacher Portal"
             >
               <ShieldCheck size={16} color="var(--primary)" />
               <span className="nav-btn-text-full">Teacher Portal</span>
-              <span className="nav-btn-text-mobile">Teacher</span>
+              <span className="nav-btn-text-mobile"></span>
             </button>
           )}
         </div>
