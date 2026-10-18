@@ -66,8 +66,8 @@ export default function Navbar({
               aria-label="Switch to Teacher Portal"
             >
               <ShieldCheck size={16} color="var(--primary)" />
-              <span className="nav-btn-text-full">Teacher Portal</span>
-              <span className="nav-btn-text-mobile"></span>
+              <span className="nav-btn-text-full"></span>
+              <span className="nav-btn-text-mobile">Teacher Portal</span>
             </button>
           )}
         </div>
