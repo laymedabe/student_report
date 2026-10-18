@@ -179,17 +179,9 @@ export default function ParentAccess({
         color: 'var(--text-muted)',
         padding: '1.25rem 0'
       }}>
-        <div>{centerInfo?.name || 'Logic Lane Learning Center'} • {centerInfo?.activeTerm || 'Academic Year 2026'}</div>
+        <div>{centerInfo?.name || 'Logic Lane Learning Center'} @ {centerInfo?.activeTerm || '2026'}</div>
         {!isParentLink && onTeacherClick && (
           <div style={{ marginTop: '0.65rem' }}>
-            <button
-              type="button"
-              onClick={onTeacherClick}
-              className="btn btn-ghost btn-sm"
-              style={{ color: 'var(--text-muted)', fontSize: '0.8rem', padding: '0.2rem 0.5rem', opacity: 0.75 }}
-            >
-              🔒 Teacher & Staff Portal
-            </button>
           </div>
         )}
       </footer>
