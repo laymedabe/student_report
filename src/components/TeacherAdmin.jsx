@@ -234,40 +234,40 @@ export default function TeacherAdmin({
     onShowToast({ type: 'info', message: 'Logged out of Teacher Mode' });
   };
 
-// Compress and optimize image to crisp, lightweight base64 Data URL (runs directly in browser)
-const compressImageFile = (file, maxSize = 300, quality = 0.85) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
-        if (width > height) {
-          if (width > maxSize) {
-            height = Math.round((height * maxSize) / width);
-            width = maxSize;
+  // Compress and optimize image to crisp, lightweight base64 Data URL (runs directly in browser)
+  const compressImageFile = (file, maxSize = 300, quality = 0.85) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > maxSize) {
+              height = Math.round((height * maxSize) / width);
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width = Math.round((width * maxSize) / height);
+              height = maxSize;
+            }
           }
-        } else {
-          if (height > maxSize) {
-            width = Math.round((width * maxSize) / height);
-            height = maxSize;
-          }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(e.target.result);
+        img.src = e.target.result;
       };
-      img.onerror = () => resolve(e.target.result);
-      img.src = e.target.result;
-    };
-    reader.onerror = () => resolve('');
-    reader.readAsDataURL(file);
-  });
-};
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleRegisterPhotoFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -453,7 +453,7 @@ const compressImageFile = (file, maxSize = 300, quality = 0.85) => {
         onRefreshData();
         onShowToast({
           type: 'success',
-          message: `Updated monthly quota for ${activeStudent.fullName} to ${quotaNum} sessions!`
+          message: `Updated monthly sessions for ${activeStudent.fullName} to ${quotaNum} sessions!`
         });
       } else {
         onShowToast({ type: 'error', message: data.message || 'Failed to update quota' });
@@ -1324,20 +1324,20 @@ const compressImageFile = (file, maxSize = 300, quality = 0.85) => {
                             const monthStats = calcMonthlySessions(stu);
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                                <span 
+                                <span
                                   className={`badge ${monthStats.isFinished ? 'badge-emerald' : 'badge-indigo'}`}
-                                  style={{ 
-                                    fontWeight: 700, 
-                                    fontSize: '0.78rem', 
-                                    display: 'inline-flex', 
-                                    alignItems: 'center', 
-                                    gap: '0.3rem', 
-                                    width: 'fit-content' 
+                                  style={{
+                                    fontWeight: 700,
+                                    fontSize: '0.78rem',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.3rem',
+                                    width: 'fit-content'
                                   }}
                                   title={`${monthStats.completedThisMonth} of ${monthStats.quota} sessions completed in ${monthStats.monthName}`}
                                 >
-                                  {monthStats.isFinished 
-                                    ? `✓ All ${monthStats.quota} done (${monthStats.monthName})` 
+                                  {monthStats.isFinished
+                                    ? `✓ All ${monthStats.quota} done (${monthStats.monthName})`
                                     : `${monthStats.remaining} of ${monthStats.quota} left (${monthStats.monthName})`}
                                 </span>
                                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -1500,8 +1500,8 @@ const compressImageFile = (file, maxSize = 300, quality = 0.85) => {
                         {activeMonthStats.monthName} Package: {activeMonthStats.quota} Sessions / Month
                       </span>
                       <strong style={{ fontSize: '0.95rem', color: activeMonthStats.isFinished ? '#15803d' : 'var(--primary)' }}>
-                        {activeMonthStats.isFinished 
-                          ? `🎉 All ${activeMonthStats.quota} sessions completed for ${activeMonthStats.monthName}!` 
+                        {activeMonthStats.isFinished
+                          ? `🎉 All ${activeMonthStats.quota} sessions completed for ${activeMonthStats.monthName}!`
                           : `${activeMonthStats.remaining} sessions remaining (${activeMonthStats.completedThisMonth} done)`}
                       </strong>
                     </div>
@@ -1514,7 +1514,7 @@ const compressImageFile = (file, maxSize = 300, quality = 0.85) => {
                       }}
                       title="Adjust monthly sessions quota"
                     >
-                      <Edit3 size={13} /> Change Monthly Quota
+                      <Edit3 size={13} /> Change No. of Sessions
                     </button>
                   </div>
 
