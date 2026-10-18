@@ -23,9 +23,9 @@ export default function Navbar({
             alt="Logic Lane Learning Center"
             className="navbar-logo-img"
             style={{
-              height: '60px',
+              height: '80px',
               width: 'auto',
-              maxHeight: '60px',
+              maxHeight: '80px',
               objectFit: 'contain'
             }}
           />

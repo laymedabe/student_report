@@ -597,15 +597,15 @@ export default function TeacherAdmin({
     setEditingReportId(null);
     const defaultSubs = (activeStudent?.subjects && activeStudent.subjects.length > 0)
       ? activeStudent.subjects.map(s => ({
-          subject: s,
-          grade: 'A (95%)',
-          mastery: 'Proficient',
-          comment: 'Consistent engagement and steady progress in coursework.'
-        }))
+        subject: s,
+        grade: 'A (95%)',
+        mastery: 'Proficient',
+        comment: 'Consistent engagement and steady progress in coursework.'
+      }))
       : [
-          { subject: 'Mathematics', grade: 'A (96%)', mastery: 'Advanced Mastery', comment: 'Excellent problem solving ability.' },
-          { subject: 'Science', grade: 'A- (92%)', mastery: 'Proficient', comment: 'Active participation during experiments.' }
-        ];
+        { subject: 'Mathematics', grade: 'A (96%)', mastery: 'Advanced Mastery', comment: 'Excellent problem solving ability.' },
+        { subject: 'Science', grade: 'A- (92%)', mastery: 'Proficient', comment: 'Active participation during experiments.' }
+      ];
 
     setNewReport({
       title: 'Term Progress Report Card',
@@ -633,15 +633,15 @@ export default function TeacherAdmin({
       behaviorRating: rep.behaviorRating || 'Exemplary',
       subjectEvaluations: (rep.subjectEvaluations && rep.subjectEvaluations.length > 0)
         ? rep.subjectEvaluations.map(s => ({
-            subject: s.subject || '',
-            grade: s.grade || '',
-            mastery: s.mastery || 'Proficient',
-            comment: s.comment || ''
-          }))
+          subject: s.subject || '',
+          grade: s.grade || '',
+          mastery: s.mastery || 'Proficient',
+          comment: s.comment || ''
+        }))
         : [
-            { subject: 'Mathematics', grade: 'A (96%)', mastery: 'Advanced Mastery', comment: 'Excellent problem solving ability.' },
-            { subject: 'Science', grade: 'A- (92%)', mastery: 'Proficient', comment: 'Active participation during experiments.' }
-          ],
+          { subject: 'Mathematics', grade: 'A (96%)', mastery: 'Advanced Mastery', comment: 'Excellent problem solving ability.' },
+          { subject: 'Science', grade: 'A- (92%)', mastery: 'Proficient', comment: 'Active participation during experiments.' }
+        ],
       strengths: Array.isArray(rep.strengths) ? rep.strengths.join('\n') : (rep.strengths || ''),
       areasForGrowth: Array.isArray(rep.areasForGrowth) ? rep.areasForGrowth.join('\n') : (rep.areasForGrowth || ''),
       tutorSummary: rep.tutorSummary || '',
@@ -902,7 +902,7 @@ export default function TeacherAdmin({
             <img
               src="/logo.png"
               alt="Logic Lane Learning Center"
-              style={{ height: '64px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: '90px', width: 'auto', objectFit: 'contain' }}
             />
           </div>
 

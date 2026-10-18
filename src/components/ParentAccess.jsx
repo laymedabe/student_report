@@ -42,7 +42,7 @@ export default function ParentAccess({
             <img
               src="/logo.png"
               alt="Logic Lane Learning Center"
-              style={{ height: '76px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: '90px', width: 'auto', objectFit: 'contain' }}
             />
           </div>
 
