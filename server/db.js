@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
@@ -9,10 +10,15 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Storage fallback paths for local development
-const DATA_DIR = path.join(__dirname, 'data');
-const STORE_PATH = path.join(DATA_DIR, 'store.json');
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+// Serverless detection (Vercel, AWS Lambda)
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+
+// Storage fallback paths: in serverless (like Vercel), only os.tmpdir() is writable
+const BUNDLED_STORE_PATH = path.join(__dirname, 'data', 'store.json');
+const DATA_DIR = IS_SERVERLESS ? path.join(os.tmpdir(), 'apex_data') : path.join(__dirname, 'data');
+const STORE_PATH = IS_SERVERLESS ? path.join(DATA_DIR, 'store.json') : BUNDLED_STORE_PATH;
+const UPLOADS_DIR = IS_SERVERLESS ? path.join(os.tmpdir(), 'apex_uploads') : path.join(__dirname, 'uploads');
+
 try {
   if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 } catch (_) { }
@@ -31,8 +37,10 @@ export function saveBase64Avatar(avatarString) {
     fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
     return `/uploads/${filename}`;
   } catch (err) {
-    console.error('Error saving base64 avatar:', err);
-    return avatarString;
+    console.warn('Notice: Base64 avatar disk save skipped:', err.message);
+    return avatarString.length > 500000
+      ? 'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80'
+      : avatarString;
   }
 }
 
@@ -54,21 +62,37 @@ if (isSupabaseConfigured) {
 // LOCAL FALLBACK HELPERS
 // -------------------------------------------------------------
 function loadLocalData() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(STORE_PATH)) return { center: {}, teachers: [], students: [], announcements: [] };
   try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(STORE_PATH)) {
+      if (fs.existsSync(BUNDLED_STORE_PATH)) {
+        const initial = fs.readFileSync(BUNDLED_STORE_PATH, 'utf8');
+        try { fs.writeFileSync(STORE_PATH, initial, 'utf8'); } catch (_) {}
+        return JSON.parse(initial);
+      }
+      return { center: {}, teachers: [], students: [], announcements: [] };
+    }
     const data = JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
     if (!data.teachers) data.teachers = [];
     if (!data.students) data.students = [];
     return data;
   } catch (err) {
+    if (fs.existsSync(BUNDLED_STORE_PATH)) {
+      try {
+        return JSON.parse(fs.readFileSync(BUNDLED_STORE_PATH, 'utf8'));
+      } catch (_) {}
+    }
     return { center: {}, teachers: [], students: [], announcements: [] };
   }
 }
 
 function saveLocalData(data) {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf8');
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('Notice: Local storage write skipped (read-only environment):', err.message);
+  }
 }
 
 // -------------------------------------------------------------
