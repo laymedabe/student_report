@@ -16,24 +16,26 @@ export default function Navbar({
         <div
           className="brand-badge"
           onClick={onGoHome}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.85rem' }}
         >
           <img
             src="/logo.png"
             alt="Logic Lane Learning Center"
             className="navbar-logo-img"
             style={{
-              height: '80px',
+              height: '50px',
               width: 'auto',
-              maxHeight: '80px',
-              objectFit: 'contain'
+              maxHeight: '50px',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 2px 8px rgba(2, 132, 199, 0.15))',
+              display: 'block'
             }}
           />
           <div>
-            <div className="brand-title">
+            <div className="brand-title" style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
               {centerName || 'Logic Lane Learning Center'}
             </div>
-            <div className="brand-subtitle" style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.04em' }}>
+            <div className="brand-subtitle" style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
               Excellentia Valores Competentia
             </div>
           </div>

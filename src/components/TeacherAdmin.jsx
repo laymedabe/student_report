@@ -891,34 +891,42 @@ export default function TeacherAdmin({
         <div style={{
           background: 'white',
           borderRadius: 'var(--radius-xl)',
-          padding: '2.5rem',
+          padding: '2.25rem 2rem',
           maxWidth: '480px',
           width: '100%',
           boxShadow: 'var(--shadow-xl)',
           border: '1px solid var(--border-light)'
         }}>
           {/* Header Logo */}
-          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '0.85rem' }}>
             <img
               src="/logo.png"
               alt="Logic Lane Learning Center"
-              style={{ height: '90px', width: 'auto', objectFit: 'contain' }}
+              style={{
+                height: '76px',
+                width: 'auto',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 4px 12px rgba(2, 132, 199, 0.15))'
+              }}
             />
           </div>
 
-          <div style={{
-            width: '50px',
-            height: '50px',
-            borderRadius: 'var(--radius-lg)',
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent-emerald) 100%)',
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 1.25rem',
-            boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)'
-          }}>
-            {authTab === 'login' ? <Lock size={24} /> : <UserPlus size={24} />}
+          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: 'var(--primary-light)',
+              color: 'var(--primary)',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              padding: '0.35rem 0.85rem',
+              borderRadius: 'var(--radius-full)',
+              border: '1px solid rgba(2, 132, 199, 0.2)'
+            }}>
+              {authTab === 'login' ? <Lock size={14} /> : <UserPlus size={14} />}
+              <span>Educator & Staff Portal</span>
+            </div>
           </div>
 
           <h2 style={{ fontSize: '1.6rem', marginBottom: '0.35rem', textAlign: 'center' }}>

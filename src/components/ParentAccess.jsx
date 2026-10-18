@@ -38,11 +38,16 @@ export default function ParentAccess({
       }}>
         <div className="parent-access-card">
           {/* Brand Logo */}
-          <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ marginBottom: '0.85rem', display: 'flex', justifyContent: 'center' }}>
             <img
               src="/logo.png"
               alt="Logic Lane Learning Center"
-              style={{ height: '90px', width: 'auto', objectFit: 'contain' }}
+              style={{
+                height: '76px',
+                width: 'auto',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 4px 12px rgba(2, 132, 199, 0.15))'
+              }}
             />
           </div>
 
