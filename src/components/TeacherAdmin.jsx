@@ -50,6 +50,7 @@ export default function TeacherAdmin({
   const [loginEmail, setLoginEmail] = useState(currentTeacher?.email || 'sample@email.com');
   const [loginPasscode, setLoginPasscode] = useState('');
   const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Register form state
   const [regName, setRegName] = useState('');
@@ -178,6 +179,7 @@ export default function TeacherAdmin({
   const handleLogin = async (e) => {
     e.preventDefault();
     setAuthError('');
+    setAuthLoading(true);
     try {
       const res = await fetch('/api/auth/teacher', {
         method: 'POST',
@@ -193,6 +195,8 @@ export default function TeacherAdmin({
       }
     } catch (err) {
       setAuthError('Connection error or invalid credentials.');
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -204,6 +208,7 @@ export default function TeacherAdmin({
       setAuthError('Please fill in your name, email, and 4-digit passcode.');
       return;
     }
+    setAuthLoading(true);
     try {
       const res = await fetch('/api/auth/teacher/register', {
         method: 'POST',
@@ -226,6 +231,8 @@ export default function TeacherAdmin({
       }
     } catch (err) {
       setAuthError('Connection error or email already taken.');
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -1000,8 +1007,8 @@ export default function TeacherAdmin({
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
-                Sign In to Teacher Dashboard
+              <button type="submit" className="btn btn-primary btn-lg" disabled={authLoading} style={{ width: '100%', marginBottom: '1.25rem' }}>
+                {authLoading ? 'Signing In...' : 'Sign In to Teacher Dashboard'}
               </button>
             </form>
           ) : (
@@ -1141,8 +1148,8 @@ export default function TeacherAdmin({
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '1.25rem' }}>
-                Create Teacher Account
+              <button type="submit" className="btn btn-primary btn-lg" disabled={authLoading} style={{ width: '100%', marginBottom: '1.25rem' }}>
+                {authLoading ? 'Creating Account...' : 'Create Teacher Account'}
               </button>
             </form>
           )}

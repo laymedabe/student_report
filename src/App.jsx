@@ -4,6 +4,7 @@ import ParentAccess from './components/ParentAccess';
 import ParentDashboard from './components/ParentDashboard';
 import TeacherAdmin from './components/TeacherAdmin';
 import Toast from './components/Toast';
+import FloatingLoader from './components/FloatingLoader';
 
 export default function App() {
   // Mode: 'parent' or 'teacher'
@@ -41,7 +42,7 @@ export default function App() {
 
   const [activeStudent, setActiveStudent] = useState(null);
   const [accessError, setAccessError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
   // Toast helper
@@ -206,11 +207,16 @@ export default function App() {
   };
 
   // Refresh all data
-  const handleRefreshData = () => {
-    fetchPublicData();
-    fetchAllStudents(currentTeacher?.id);
-    if (parentCode) {
-      fetchStudentByCode(parentCode);
+  const handleRefreshData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchPublicData(),
+        fetchAllStudents(currentTeacher?.id),
+        parentCode ? fetchStudentByCode(parentCode) : Promise.resolve()
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -260,6 +266,7 @@ export default function App() {
               initialPin={prefillPin}
               isParentLink={isParentLink}
               onTeacherClick={() => handleSwitchMode('teacher')}
+              isLoading={loading}
             />
           )
         ) : (
@@ -276,6 +283,9 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Floating Loading Overlay with Delay Notice */}
+      <FloatingLoader isLoading={loading} />
 
       {/* Toast Notification Container */}
       <Toast toast={toast} onClose={() => setToast(null)} />

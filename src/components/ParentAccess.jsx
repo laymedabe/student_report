@@ -13,17 +13,15 @@ export default function ParentAccess({
   errorMsg,
   initialPin = '',
   isParentLink = false,
-  onTeacherClick
+  onTeacherClick,
+  isLoading = false
 }) {
   const [pin, setPin] = useState(initialPin);
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!pin.trim()) return;
-    setLoading(true);
+    if (!pin.trim() || isLoading) return;
     onAccessSubmit(pin.trim());
-    setTimeout(() => setLoading(false), 400);
   };
 
   return (
@@ -140,7 +138,7 @@ export default function ParentAccess({
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading || !pin.trim()}
+              disabled={isLoading || !pin.trim()}
               style={{
                 width: '100%',
                 fontWeight: 800,
@@ -150,7 +148,7 @@ export default function ParentAccess({
                 boxShadow: '0 4px 14px rgba(79, 70, 229, 0.4)'
               }}
             >
-              {loading ? 'Finding Records...' : (
+              {isLoading ? 'Finding Records...' : (
                 <>
                   Open Child Dashboard
                   <ArrowRight size={20} />
