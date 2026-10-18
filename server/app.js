@@ -250,6 +250,16 @@ app.post('/api/students/:id/reports', async (req, res) => {
   }
 });
 
+app.put('/api/students/:studentId/reports/:reportId', async (req, res) => {
+  try {
+    const report = await db.updateReport(req.params.studentId, req.params.reportId, req.body);
+    if (!report) return res.status(404).json({ success: false, message: 'Student or report not found' });
+    res.json({ success: true, report });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 app.delete('/api/students/:studentId/reports/:reportId', async (req, res) => {
   try {
     await db.deleteReport(req.params.studentId, req.params.reportId);

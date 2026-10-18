@@ -72,6 +72,7 @@ export default function TeacherAdmin({
   const [showAddSessionModal, setShowAddSessionModal] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [showAddReportModal, setShowAddReportModal] = useState(false);
+  const [editingReportId, setEditingReportId] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareStudent, setShareStudent] = useState(null);
 
@@ -584,24 +585,137 @@ export default function TeacherAdmin({
     }
   };
 
-  // Add Report Handler
-  const handleAddReport = async (e) => {
+  // Open Create Report Modal
+  const handleOpenCreateReport = () => {
+    setEditingReportId(null);
+    const defaultSubs = (activeStudent?.subjects && activeStudent.subjects.length > 0)
+      ? activeStudent.subjects.map(s => ({
+          subject: s,
+          grade: 'A (95%)',
+          mastery: 'Proficient',
+          comment: 'Consistent engagement and steady progress in coursework.'
+        }))
+      : [
+          { subject: 'Mathematics', grade: 'A (96%)', mastery: 'Advanced Mastery', comment: 'Excellent problem solving ability.' },
+          { subject: 'Science', grade: 'A- (92%)', mastery: 'Proficient', comment: 'Active participation during experiments.' }
+        ];
+
+    setNewReport({
+      title: 'Term Progress Report Card',
+      period: 'Current Term',
+      overallGrade: 'A (95%)',
+      attendanceRate: '100%',
+      behaviorRating: 'Exemplary',
+      subjectEvaluations: defaultSubs,
+      strengths: 'Consistent homework completion\nStrong analytical curiosity\nAttentive listening',
+      areasForGrowth: 'Double-check calculations before submitting\nContinue expanding vocabulary usage',
+      tutorSummary: 'Demonstrates great enthusiasm and progress. A pleasure to tutor!',
+      teacherSignature: currentTeacher?.name || center?.tutorName || 'Teacher'
+    });
+    setShowAddReportModal(true);
+  };
+
+  // Open Edit Report Modal (pre-fills existing report data)
+  const handleOpenEditReport = (rep) => {
+    setEditingReportId(rep.id);
+    setNewReport({
+      title: rep.title || 'Term Progress Report Card',
+      period: rep.period || 'Current Term',
+      overallGrade: rep.overallGrade || 'A (95%)',
+      attendanceRate: rep.attendanceRate || '100%',
+      behaviorRating: rep.behaviorRating || 'Exemplary',
+      subjectEvaluations: (rep.subjectEvaluations && rep.subjectEvaluations.length > 0)
+        ? rep.subjectEvaluations.map(s => ({
+            subject: s.subject || '',
+            grade: s.grade || '',
+            mastery: s.mastery || 'Proficient',
+            comment: s.comment || ''
+          }))
+        : [
+            { subject: 'Mathematics', grade: 'A (96%)', mastery: 'Advanced Mastery', comment: 'Excellent problem solving ability.' },
+            { subject: 'Science', grade: 'A- (92%)', mastery: 'Proficient', comment: 'Active participation during experiments.' }
+          ],
+      strengths: Array.isArray(rep.strengths) ? rep.strengths.join('\n') : (rep.strengths || ''),
+      areasForGrowth: Array.isArray(rep.areasForGrowth) ? rep.areasForGrowth.join('\n') : (rep.areasForGrowth || ''),
+      tutorSummary: rep.tutorSummary || '',
+      teacherSignature: rep.teacherSignature || currentTeacher?.name || center?.tutorName || 'Teacher'
+    });
+    setShowAddReportModal(true);
+  };
+
+  // Subject Mastery Matrix Array Helpers
+  const handleAddSubjectEval = () => {
+    setNewReport(prev => ({
+      ...prev,
+      subjectEvaluations: [
+        ...(prev.subjectEvaluations || []),
+        { subject: '', grade: 'A (95%)', mastery: 'Proficient', comment: '' }
+      ]
+    }));
+  };
+
+  const handleUpdateSubjectEval = (index, field, value) => {
+    setNewReport(prev => {
+      const copy = [...(prev.subjectEvaluations || [])];
+      copy[index] = { ...copy[index], [field]: value };
+      return { ...prev, subjectEvaluations: copy };
+    });
+  };
+
+  const handleRemoveSubjectEval = (index) => {
+    setNewReport(prev => ({
+      ...prev,
+      subjectEvaluations: (prev.subjectEvaluations || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  // Add / Edit Report Handler
+  const handleSaveReport = async (e) => {
     e.preventDefault();
     if (!activeStudent) return;
     try {
-      const res = await fetch(`/api/students/${activeStudent.id}/reports`, {
-        method: 'POST',
+      const url = editingReportId
+        ? `/api/students/${activeStudent.id}/reports/${editingReportId}`
+        : `/api/students/${activeStudent.id}/reports`;
+      const method = editingReportId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newReport)
       });
       const data = await res.json();
       if (data.success) {
+        const savedReport = data.report || { ...newReport, id: editingReportId || `rep-${Date.now()}` };
+        setStudentOverrides(prev => {
+          const currStu = prev[activeStudent.id] || activeStudent;
+          let updatedReports = currStu.reports ? [...currStu.reports] : [];
+          if (editingReportId) {
+            updatedReports = updatedReports.map(r => r.id === editingReportId ? { ...r, ...savedReport } : r);
+          } else {
+            updatedReports = [savedReport, ...updatedReports];
+          }
+          return {
+            ...prev,
+            [activeStudent.id]: {
+              ...currStu,
+              reports: updatedReports
+            }
+          };
+        });
+
         setShowAddReportModal(false);
+        setEditingReportId(null);
         onRefreshData();
-        onShowToast({ type: 'success', message: 'Progress Report Card published!' });
+        onShowToast({
+          type: 'success',
+          message: editingReportId ? 'Progress & Growth Report updated!' : 'Progress Report Card published!'
+        });
+      } else {
+        onShowToast({ type: 'error', message: data.message || 'Failed to save report' });
       }
     } catch (err) {
-      onShowToast({ type: 'error', message: 'Failed to publish report' });
+      onShowToast({ type: 'error', message: err.message || 'Failed to save report' });
     }
   };
 
@@ -612,6 +726,16 @@ export default function TeacherAdmin({
       const res = await fetch(`/api/students/${activeStudent.id}/reports/${reportId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
+        setStudentOverrides(prev => {
+          const currStu = prev[activeStudent.id] || activeStudent;
+          return {
+            ...prev,
+            [activeStudent.id]: {
+              ...currStu,
+              reports: (currStu.reports || []).filter(r => r.id !== reportId)
+            }
+          };
+        });
         onRefreshData();
         onShowToast({ type: 'success', message: 'Report deleted' });
       }
@@ -1473,11 +1597,30 @@ export default function TeacherAdmin({
                 >
                   <Edit3 size={15} /> Edit Student Info
                 </button>
+                {activeStudent.reports && activeStudent.reports.length > 0 ? (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    style={{ color: 'var(--primary)', borderColor: '#c7d2fe', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    onClick={() => handleOpenEditReport(activeStudent.reports[0])}
+                    title="Edit Subject Mastery evaluations, grades & progress metrics"
+                  >
+                    <Award size={15} /> Edit Progress & Growth
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    style={{ color: 'var(--primary)', borderColor: '#c7d2fe', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    onClick={handleOpenCreateReport}
+                    title="Set up Subject Mastery evaluations and progress report"
+                  >
+                    <Award size={15} /> Add Progress & Growth
+                  </button>
+                )}
                 <button
                   className="btn btn-secondary btn-sm"
-                  onClick={() => setShowAddReportModal(true)}
+                  onClick={handleOpenCreateReport}
                 >
-                  <FileText size={15} /> Publish Report Card
+                  <FileText size={15} /> + New Report Card
                 </button>
               </div>
             </div>
@@ -1617,11 +1760,11 @@ export default function TeacherAdmin({
             <div className="card-header">
               <h3 className="card-title">
                 <FileText size={20} color="var(--primary)" />
-                Published Progress Report Cards ({activeStudent.reports?.length || 0})
+                Academic Progress & Report Cards ({activeStudent.reports?.length || 0})
               </h3>
               <button
                 className="btn btn-primary btn-sm"
-                onClick={() => setShowAddReportModal(true)}
+                onClick={handleOpenCreateReport}
               >
                 <Plus size={15} /> Create Report Card
               </button>
@@ -1636,35 +1779,82 @@ export default function TeacherAdmin({
                     padding: '1.25rem',
                     borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--border-light)',
-                    marginBottom: '1rem',
+                    marginBottom: '1rem'
+                  }}
+                >
+                  <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexWrap: 'wrap',
-                    gap: '1rem'
-                  }}
-                >
-                  <div>
-                    <h4 style={{ fontSize: '1.1rem', marginBottom: '0.2rem' }}>{rep.title}</h4>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      Period: {rep.period} • Overall: <strong>{rep.overallGrade}</strong> • Attendance: <strong>{rep.attendanceRate}</strong>
+                    gap: '1rem',
+                    marginBottom: rep.subjectEvaluations && rep.subjectEvaluations.length > 0 ? '0.75rem' : 0
+                  }}>
+                    <div>
+                      <h4 style={{ fontSize: '1.1rem', marginBottom: '0.2rem' }}>{rep.title}</h4>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        Period: {rep.period} • Academic Rating: <strong style={{ color: 'var(--primary)' }}>{rep.overallGrade}</strong> • Attendance: <strong>{rep.attendanceRate}</strong>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        style={{ color: 'var(--primary)', borderColor: '#c7d2fe', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                        onClick={() => handleOpenEditReport(rep)}
+                        title="Edit Report Card & Subject Mastery Matrix"
+                      >
+                        <Edit3 size={14} /> Edit Report
+                      </button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => onViewAsParent(activeStudent.pinCode || activeStudent.accessCode)}
+                      >
+                        <ExternalLink size={14} /> Preview Card
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: '#ef4444' }}
+                        onClick={() => handleDeleteReport(rep.id)}
+                        title="Delete Report Card"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => onViewAsParent(activeStudent.pinCode || activeStudent.accessCode)}
-                    >
-                      <ExternalLink size={14} /> Preview Card
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDeleteReport(rep.id)}
-                    >
-                      <Trash2 size={14} /> Delete
-                    </button>
-                  </div>
+                  {/* Subject Mastery Preview Tags */}
+                  {rep.subjectEvaluations && rep.subjectEvaluations.length > 0 && (
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '0.5rem',
+                      paddingTop: '0.65rem',
+                      borderTop: '1px dashed #e2e8f0'
+                    }}>
+                      {rep.subjectEvaluations.map((sub, sIdx) => (
+                        <div
+                          key={sIdx}
+                          style={{
+                            background: '#ffffff',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '6px',
+                            padding: '0.25rem 0.6rem',
+                            fontSize: '0.8rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem'
+                          }}
+                        >
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{sub.subject}:</span>
+                          <span style={{ color: '#4f46e5', fontWeight: 700 }}>{sub.grade || '—'}</span>
+                          <span className="badge badge-indigo" style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem' }}>
+                            {sub.mastery || 'Proficient'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))
             ) : (
@@ -2332,22 +2522,25 @@ export default function TeacherAdmin({
 
 
       {/* =========================================================
-          MODAL: GENERATE PROGRESS REPORT CARD
+          MODAL: PROGRESS REPORT CARD & SUBJECT MASTERY MATRIX
           ========================================================= */}
       {showAddReportModal && activeStudent && (
-        <div className="modal-overlay" onClick={() => setShowAddReportModal(false)}>
-          <div className="modal-content" style={{ maxWidth: '720px' }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => { setShowAddReportModal(false); setEditingReportId(null); }}>
+          <div className="modal-content" style={{ maxWidth: '780px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h3 style={{ fontSize: '1.3rem' }}>Create Official Progress Report</h3>
+                <h3 style={{ fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Award size={22} color="var(--primary)" />
+                  {editingReportId ? 'Edit Academic Progress & Report Card' : 'Create Official Progress Report'}
+                </h3>
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  Formal report card for {activeStudent.fullName}
+                  Evaluations and progress metrics for {activeStudent.fullName}
                 </span>
               </div>
-              <button className="btn btn-ghost" onClick={() => setShowAddReportModal(false)}>✕</button>
+              <button className="btn btn-ghost" onClick={() => { setShowAddReportModal(false); setEditingReportId(null); }}>✕</button>
             </div>
 
-            <form onSubmit={handleAddReport}>
+            <form onSubmit={handleSaveReport}>
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Report Title</label>
@@ -2365,6 +2558,7 @@ export default function TeacherAdmin({
                     type="text"
                     className="form-input"
                     value={newReport.period}
+                    placeholder="e.g. Current Term or October 2026"
                     onChange={(e) => setNewReport({ ...newReport, period: e.target.value })}
                   />
                 </div>
@@ -2372,10 +2566,11 @@ export default function TeacherAdmin({
 
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Overall Grade Rating</label>
+                  <label className="form-label">Academic Rating / Overall Grade</label>
                   <input
                     type="text"
                     className="form-input"
+                    placeholder="e.g. 89 or A (95%)"
                     value={newReport.overallGrade}
                     onChange={(e) => setNewReport({ ...newReport, overallGrade: e.target.value })}
                   />
@@ -2386,9 +2581,134 @@ export default function TeacherAdmin({
                     type="text"
                     className="form-input"
                     value={newReport.attendanceRate}
+                    placeholder="e.g. 100%"
                     onChange={(e) => setNewReport({ ...newReport, attendanceRate: e.target.value })}
                   />
                 </div>
+              </div>
+
+              {/* Subject Mastery & Competency Matrix Editor */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: 'var(--radius-md)',
+                padding: '1.25rem',
+                margin: '1rem 0 1.25rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <Award size={18} color="var(--primary)" />
+                      Subject Mastery & Competency Matrix
+                    </h4>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      These evaluations are displayed directly on the parent's "Progress & Growth" tab.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={handleAddSubjectEval}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.825rem' }}
+                  >
+                    <Plus size={14} /> Add Subject
+                  </button>
+                </div>
+
+                {(!newReport.subjectEvaluations || newReport.subjectEvaluations.length === 0) ? (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontStyle: 'italic', margin: '0.5rem 0' }}>
+                    No subject evaluations added yet. Click "+ Add Subject" to add one.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    {newReport.subjectEvaluations.map((item, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          background: '#ffffff',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '8px',
+                          padding: '0.85rem',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                          <div style={{ flex: '2', minWidth: '140px' }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>
+                              Subject Name
+                            </label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              style={{ padding: '0.45rem 0.65rem', fontSize: '0.9rem' }}
+                              placeholder="e.g. Mathematics"
+                              value={item.subject || ''}
+                              onChange={(e) => handleUpdateSubjectEval(idx, 'subject', e.target.value)}
+                              required
+                            />
+                          </div>
+
+                          <div style={{ flex: '1.5', minWidth: '130px' }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>
+                              Mastery Level
+                            </label>
+                            <select
+                              className="form-select"
+                              style={{ padding: '0.45rem 0.65rem', fontSize: '0.9rem' }}
+                              value={item.mastery || 'Proficient'}
+                              onChange={(e) => handleUpdateSubjectEval(idx, 'mastery', e.target.value)}
+                            >
+                              <option value="Advanced Mastery">Advanced Mastery</option>
+                              <option value="Proficient">Proficient</option>
+                              <option value="Developing">Developing</option>
+                              <option value="Needs Attention">Needs Attention</option>
+                            </select>
+                          </div>
+
+                          <div style={{ flex: '1.2', minWidth: '110px' }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>
+                              Grade / Rating
+                            </label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              style={{ padding: '0.45rem 0.65rem', fontSize: '0.9rem' }}
+                              placeholder="e.g. A (96%)"
+                              value={item.grade || ''}
+                              onChange={(e) => handleUpdateSubjectEval(idx, 'grade', e.target.value)}
+                            />
+                          </div>
+
+                          <div style={{ alignSelf: 'flex-end', paddingBottom: '2px' }}>
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm"
+                              style={{ color: '#ef4444', padding: '0.45rem' }}
+                              onClick={() => handleRemoveSubjectEval(idx)}
+                              title="Remove Subject"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>
+                            Teacher Observation / Comment
+                          </label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            style={{ padding: '0.45rem 0.65rem', fontSize: '0.875rem' }}
+                            placeholder="e.g. Excellent problem solving ability and active engagement."
+                            value={item.comment || ''}
+                            onChange={(e) => handleUpdateSubjectEval(idx, 'comment', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -2421,12 +2741,23 @@ export default function TeacherAdmin({
                 />
               </div>
 
+              <div className="form-group">
+                <label className="form-label">Teacher Signature</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newReport.teacherSignature || ''}
+                  onChange={(e) => setNewReport({ ...newReport, teacherSignature: e.target.value })}
+                  placeholder="e.g. Teacher Kimberly Hayes, M.Ed."
+                />
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setShowAddReportModal(false)}>
+                <button type="button" className="btn btn-secondary" onClick={() => { setShowAddReportModal(false); setEditingReportId(null); }}>
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Publish Official Report Card
+                  {editingReportId ? 'Save Changes' : 'Publish Official Report Card'}
                 </button>
               </div>
             </form>

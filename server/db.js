@@ -1014,6 +1014,78 @@ export async function createReport(studentId, reportData) {
   return newReport;
 }
 
+export async function updateReport(studentId, reportId, reportData) {
+  const payload = {};
+  if (reportData.title) payload.title = reportData.title;
+  if (reportData.period) payload.period = reportData.period;
+  if (reportData.overallGrade !== undefined) payload.overall_grade = reportData.overallGrade;
+  if (reportData.attendanceRate !== undefined) payload.attendance_rate = reportData.attendanceRate;
+  if (reportData.behaviorRating !== undefined) payload.behavior_rating = reportData.behaviorRating;
+  if (reportData.subjectEvaluations !== undefined) payload.subject_evaluations = reportData.subjectEvaluations;
+  if (reportData.strengths !== undefined) {
+    payload.strengths = Array.isArray(reportData.strengths)
+      ? reportData.strengths
+      : (reportData.strengths ? reportData.strengths.split('\n').filter(Boolean) : []);
+  }
+  if (reportData.areasForGrowth !== undefined) {
+    payload.areas_for_growth = Array.isArray(reportData.areasForGrowth)
+      ? reportData.areasForGrowth
+      : (reportData.areasForGrowth ? reportData.areasForGrowth.split('\n').filter(Boolean) : []);
+  }
+  if (reportData.tutorSummary !== undefined) payload.tutor_summary = reportData.tutorSummary;
+  if (reportData.teacherSignature !== undefined) payload.teacher_signature = reportData.teacherSignature;
+
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase
+      .from('reports')
+      .update(payload)
+      .eq('id', reportId)
+      .eq('student_id', studentId)
+      .select()
+      .maybeSingle();
+
+    if (error) throw error;
+    if (data) {
+      return {
+        id: data.id,
+        title: data.title,
+        period: data.period,
+        issueDate: data.issue_date,
+        overallGrade: data.overall_grade,
+        attendanceRate: data.attendance_rate,
+        behaviorRating: data.behavior_rating,
+        subjectEvaluations: data.subject_evaluations || [],
+        strengths: data.strengths || [],
+        areasForGrowth: data.areas_for_growth || [],
+        tutorSummary: data.tutor_summary,
+        teacherSignature: data.teacher_signature
+      };
+    }
+  }
+
+  const data = loadLocalData();
+  const student = data.students.find(s => s.id === studentId);
+  if (!student) return null;
+  if (!student.reports) student.reports = [];
+  const idx = student.reports.findIndex(r => r.id === reportId);
+  if (idx === -1) return null;
+
+  student.reports[idx] = {
+    ...student.reports[idx],
+    ...reportData,
+    id: reportId,
+    subjectEvaluations: reportData.subjectEvaluations !== undefined ? reportData.subjectEvaluations : student.reports[idx].subjectEvaluations,
+    strengths: Array.isArray(reportData.strengths)
+      ? reportData.strengths
+      : (reportData.strengths ? reportData.strengths.split('\n').filter(Boolean) : student.reports[idx].strengths),
+    areasForGrowth: Array.isArray(reportData.areasForGrowth)
+      ? reportData.areasForGrowth
+      : (reportData.areasForGrowth ? reportData.areasForGrowth.split('\n').filter(Boolean) : student.reports[idx].areasForGrowth)
+  };
+  saveLocalData(data);
+  return student.reports[idx];
+}
+
 export async function deleteReport(studentId, reportId) {
   if (isSupabaseConfigured) {
     const { error } = await supabase
