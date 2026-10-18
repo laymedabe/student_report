@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  ArrowRight, 
-  ShieldCheck, 
-  FileText, 
+import {
+  ArrowRight,
+  ShieldCheck,
+  FileText,
   CheckCircle,
   KeyRound
 } from 'lucide-react';
 
-export default function ParentAccess({ 
-  onAccessSubmit, 
-  centerInfo, 
-  errorMsg, 
+export default function ParentAccess({
+  onAccessSubmit,
+  centerInfo,
+  errorMsg,
   initialPin = '',
   isParentLink = false,
   onTeacherClick
@@ -82,7 +82,7 @@ export default function ParentAccess({
           {/* Form */}
           <form onSubmit={handleSubmit} style={{ marginBottom: '1.75rem' }}>
             <div style={{ position: 'relative', marginBottom: '0.5rem', textAlign: 'left' }}>
-              <label 
+              <label
                 htmlFor="student-pin-field"
                 style={{
                   display: 'block',
@@ -96,9 +96,9 @@ export default function ParentAccess({
                 Student 4-Digit PIN Code
               </label>
 
-              <input 
+              <input
                 id="student-pin-field"
-                type="text" 
+                type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 autoComplete="one-time-code"
@@ -137,8 +137,8 @@ export default function ParentAccess({
               </div>
             )}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary"
               disabled={loading || !pin.trim()}
               style={{
@@ -158,22 +158,6 @@ export default function ParentAccess({
               )}
             </button>
           </form>
-
-          {/* Value Props */}
-          <div className="parent-access-props">
-            <div className="parent-access-prop-item">
-              <CheckCircle size={17} color="#10b981" />
-              <span>Instant PIN Access</span>
-            </div>
-            <div className="parent-access-prop-item">
-              <FileText size={17} color="#4f46e5" />
-              <span>Official Reports</span>
-            </div>
-            <div className="parent-access-prop-item">
-              <ShieldCheck size={17} color="#0d9488" />
-              <span>Secure & Private</span>
-            </div>
-          </div>
         </div>
       </main>
 
