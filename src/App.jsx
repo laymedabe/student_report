@@ -52,15 +52,28 @@ export default function App() {
     }, 3500);
   }, []);
 
-  // Teacher state
-  const [currentTeacher, setCurrentTeacher] = useState(() => {
-    try {
-      const stored = localStorage.getItem('apex_teacher_profile');
-      return stored ? JSON.parse(stored) : null;
-    } catch (_) {
-      return null;
-    }
-  });
+  // Teacher state: session-only, not stored in localStorage to prevent auto-login
+  const [currentTeacher, setCurrentTeacher] = useState(null);
+
+  // Clear any existing stored credentials on load
+  useEffect(() => {
+    localStorage.removeItem('apex_teacher_profile');
+    localStorage.removeItem('apex_student_pin');
+    localStorage.removeItem('apex_parent_code');
+  }, []);
+
+  // Warning when refreshing or leaving page while logged in (returns to login portal)
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (activeStudent || currentTeacher) {
+        e.preventDefault();
+        e.returnValue = 'Refreshing will return you to the login portal. Are you sure you want to proceed?';
+        return e.returnValue;
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [activeStudent, currentTeacher]);
 
   // Fetch center info
   const fetchPublicData = useCallback(async () => {
@@ -91,10 +104,8 @@ export default function App() {
   const handleTeacherChange = useCallback((teacher) => {
     setCurrentTeacher(teacher);
     if (teacher) {
-      localStorage.setItem('apex_teacher_profile', JSON.stringify(teacher));
       fetchAllStudents(teacher.id);
     } else {
-      localStorage.removeItem('apex_teacher_profile');
       fetchAllStudents();
     }
   }, [fetchAllStudents]);
@@ -184,8 +195,13 @@ export default function App() {
   const handleSwitchMode = (newMode) => {
     setMode(newMode);
     setIsTeacherPreview(false);
+    if (newMode === 'parent') {
+      // Clear teacher session so switching to teacher portal requires entering passcode
+      setCurrentTeacher(null);
+    }
     if (newMode === 'teacher') {
-      fetchAllStudents(currentTeacher?.id);
+      setCurrentTeacher(null);
+      fetchAllStudents();
     }
   };
 

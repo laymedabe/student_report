@@ -59,7 +59,17 @@ export default function Navbar({
               <span className="nav-btn-text-full">Parent Portal View</span>
               <span className="nav-btn-text-mobile">Parent View</span>
             </button>
-          ) : null}
+          ) : (
+            <button 
+              className="btn btn-secondary nav-mode-btn"
+              onClick={() => onSwitchMode('teacher')}
+              aria-label="Switch to Teacher Portal"
+            >
+              <ShieldCheck size={16} color="var(--primary)" />
+              <span className="nav-btn-text-full">Teacher Portal</span>
+              <span className="nav-btn-text-mobile">Teacher</span>
+            </button>
+          )}
         </div>
       </div>
     </header>
