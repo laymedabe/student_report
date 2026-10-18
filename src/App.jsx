@@ -15,19 +15,16 @@ export default function App() {
   const [announcements, setAnnouncements] = useState([]);
 
   // Parent portal state (Student PIN Code)
-  const [parentCode, setParentCode] = useState(() => {
-    // Check URL parameters first: ?pin=9421 or legacy ?code=9421
+  // Always require PIN entry on page load (no auto-login on refresh)
+  const [parentCode, setParentCode] = useState('');
+
+  // Shared links (?pin=9421) only pre-fill the PIN box
+  const [prefillPin] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const pinParam = params.get('pin') || params.get('code');
-    if (pinParam) return pinParam.trim().toUpperCase();
-
-    // Check hash: #9421
-    if (window.location.hash && window.location.hash.length > 1) {
-      return window.location.hash.replace('#', '').trim().toUpperCase();
-    }
-
-    // Check localStorage
-    return localStorage.getItem('apex_student_pin') || localStorage.getItem('apex_parent_code') || '';
+    localStorage.removeItem('apex_student_pin');
+    localStorage.removeItem('apex_parent_code');
+    return pinParam ? pinParam.trim().toUpperCase() : '';
   });
 
   const [activeStudent, setActiveStudent] = useState(null);
@@ -109,13 +106,8 @@ export default function App() {
         setActiveStudent(data.student);
         if (data.center) setCenter(data.center);
         if (data.announcements) setAnnouncements(data.announcements);
-        localStorage.setItem('apex_student_pin', code);
-        
-        // Update URL query parameter cleanly without reloading (?pin=9421)
-        const url = new URL(window.location.href);
-        url.searchParams.set('pin', code);
-        url.searchParams.delete('code');
-        window.history.replaceState({}, '', url.toString());
+        // Clean the URL so a refresh returns to the PIN screen
+        window.history.replaceState({}, '', window.location.pathname);
       } else {
         setActiveStudent(null);
         setAccessError(data.message || 'No student found with this PIN Code. Please check with your teacher.');
@@ -209,6 +201,7 @@ export default function App() {
               onAccessSubmit={handleAccessSubmit}
               centerInfo={center}
               errorMsg={accessError}
+              initialPin={prefillPin}
             />
           )
         ) : (

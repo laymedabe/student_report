@@ -7,8 +7,8 @@ import {
   KeyRound
 } from 'lucide-react';
 
-export default function ParentAccess({ onAccessSubmit, centerInfo, errorMsg }) {
-  const [pin, setPin] = useState('');
+export default function ParentAccess({ onAccessSubmit, centerInfo, errorMsg, initialPin = '' }) {
+  const [pin, setPin] = useState(initialPin);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
