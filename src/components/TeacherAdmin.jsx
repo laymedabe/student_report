@@ -880,7 +880,7 @@ export default function TeacherAdmin({
   // -------------------------------------------------------------
   if (!isAuthenticated) {
     return (
-      <div style={{
+      <div className="teacher-auth-container" style={{
         minHeight: '90vh',
         display: 'flex',
         alignItems: 'center',
@@ -888,7 +888,7 @@ export default function TeacherAdmin({
         padding: '1.5rem',
         background: 'var(--bg-app)'
       }}>
-        <div style={{
+        <div className="teacher-auth-card" style={{
           background: 'white',
           borderRadius: 'var(--radius-xl)',
           padding: '2.25rem 2rem',
@@ -1281,7 +1281,7 @@ export default function TeacherAdmin({
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div className="admin-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button
             className={`btn btn-sm ${adminView === 'directory' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => { setAdminView('directory'); setSelectedStudentId(null); }}
@@ -1395,7 +1395,7 @@ export default function TeacherAdmin({
           </div>
 
           {/* Students Table */}
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="card table-responsive" style={{ padding: 0 }}>
             <table className="admin-table">
               <thead>
                 <tr>
@@ -2402,7 +2402,7 @@ export default function TeacherAdmin({
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button type="button" className="btn btn-secondary" onClick={handleCloseStudentModal}>
                   Cancel
                 </button>
@@ -2530,7 +2530,7 @@ export default function TeacherAdmin({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button type="button" className="btn btn-secondary" onClick={handleCloseSessionModal}>
                   Cancel
                 </button>
@@ -2776,7 +2776,7 @@ export default function TeacherAdmin({
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => { setShowAddReportModal(false); setEditingReportId(null); }}>
                   Cancel
                 </button>
@@ -2827,7 +2827,7 @@ export default function TeacherAdmin({
               {center?.tutorName || 'Teacher Kimberly'}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
                 className="btn btn-secondary"
                 onClick={() => {
@@ -2895,7 +2895,7 @@ export default function TeacherAdmin({
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+              <div className="modal-actions" style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   className="btn btn-secondary"

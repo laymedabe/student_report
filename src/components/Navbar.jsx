@@ -31,11 +31,11 @@ export default function Navbar({
               display: 'block'
             }}
           />
-          <div>
-            <div className="brand-title" style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+          <div className="brand-text-container">
+            <div className="brand-title">
               {centerName || 'Logic Lane Learning Center'}
             </div>
-            <div className="brand-subtitle" style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            <div className="brand-subtitle">
               Excellentia Valores Competentia
             </div>
           </div>
@@ -56,8 +56,8 @@ export default function Navbar({
               aria-label="Return to Teacher Admin Mode"
             >
               <ArrowLeft size={16} />
-              <span className="nav-btn-text-full">Return</span>
-              <span className="nav-btn-text-mobile"></span>
+              <span className="nav-btn-text-full">Return to Admin</span>
+              <span className="nav-btn-text-mobile">Return</span>
             </button>
           ) : currentMode === 'teacher' ? (
             <button
@@ -67,7 +67,7 @@ export default function Navbar({
             >
               <UserCheck size={16} />
               <span className="nav-btn-text-full">Parent Portal</span>
-              <span className="nav-btn-text-mobile"></span>
+              <span className="nav-btn-text-mobile">Parent</span>
             </button>
           ) : (
             <button
@@ -76,8 +76,8 @@ export default function Navbar({
               aria-label="Switch to Teacher Portal"
             >
               <ShieldCheck size={16} />
-              <span className="nav-btn-text-full"></span>
-              <span className="nav-btn-text-mobile">Teacher Portal</span>
+              <span className="nav-btn-text-full">Teacher Portal</span>
+              <span className="nav-btn-text-mobile">Teacher</span>
             </button>
           )}
         </div>

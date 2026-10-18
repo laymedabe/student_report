@@ -147,14 +147,33 @@ a {
   transition: transform var(--transition-fast);
 }
 
-@media (max-width: 640px) {
-  .top-nav {
-    padding: 0.5rem 1rem;
-  }
-  .navbar-logo-img {
-    height: 42px;
-    max-height: 42px;
-  }
+.brand-text-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.brand-subtitle {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nav-btn-text-full {
+  display: inline;
+}
+
+.nav-btn-text-mobile {
+  display: none;
 }
 
 .nav-content {
@@ -1034,101 +1053,8 @@ a {
   }
 }
 
-/* Print Rules */
-@media print {
-  body {
-    background: white !important;
-    color: black !important;
-  }
-
-  .top-nav,
-  .tabs-container,
-  .hero-actions,
-  .btn,
-  .no-print,
-  .modal-overlay,
-  .toast {
-    display: none !important;
-  }
-
-  .app-container {
-    padding: 0 !important;
-    background: white !important;
-  }
-
-  .report-card-container {
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  .student-hero-card {
-    background: none !important;
-    color: black !important;
-    box-shadow: none !important;
-    padding: 1rem 0 !important;
-    border-bottom: 2px solid #0f172a !important;
-  }
-
-  .hero-info h1,
-  .hero-subtitle {
-    color: black !important;
-  }
-
-  .student-avatar-lg {
-    border: 1px solid #ccc !important;
-  }
-
-  .grades-table th {
-    background: #e2e8f0 !important;
-    color: black !important;
-    border: 1px solid #94a3b8 !important;
-  }
-
-  .grades-table td {
-    border: 1px solid #cbd5e1 !important;
-  }
-
-  @page {
-    margin: 1.5cm;
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .student-hero-card {
-    padding: 1.5rem;
-  }
-
-  .hero-layout {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .report-card-container {
-    padding: 1.5rem;
-  }
-
-  .report-evaluation-section {
-    grid-template-columns: 1fr;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .report-signature-block {
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: flex-start;
-  }
-}
-
 /* ============================================================
-   PARENT ACCESS PORTAL STYLING
+   PARENT ACCESS PORTAL BASE STYLING (Solid Brand Color, No Gradients)
    ============================================================ */
 .parent-access-container {
   min-height: calc(100vh - 80px);
@@ -1137,7 +1063,7 @@ a {
   justify-content: center;
   align-items: center;
   padding: 2.5rem 1rem;
-  background: radial-gradient(circle at 50% 15%, rgba(2, 132, 199, 0.12) 0%, rgba(34, 197, 94, 0.04) 40%, transparent 70%);
+  background: var(--bg-app);
 }
 
 .parent-access-card {
@@ -1209,4 +1135,524 @@ a {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
+}
+
+/* Responsive Visibility Helpers */
+.hide-on-mobile {
+  display: inline;
+}
+
+.show-on-mobile {
+  display: none;
+}
+
+/* ============================================================
+   PRINT RULES
+   ============================================================ */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .top-nav,
+  .tabs-container,
+  .hero-actions,
+  .btn,
+  .no-print,
+  .modal-overlay,
+  .toast {
+    display: none !important;
+  }
+
+  .app-container {
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .report-card-container {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .student-hero-card {
+    background: none !important;
+    color: black !important;
+    box-shadow: none !important;
+    padding: 1rem 0 !important;
+    border-bottom: 2px solid #0f172a !important;
+  }
+
+  .hero-info h1,
+  .hero-subtitle {
+    color: black !important;
+  }
+
+  .student-avatar-lg {
+    border: 1px solid #ccc !important;
+  }
+
+  .grades-table th {
+    background: #e2e8f0 !important;
+    color: black !important;
+    border: 1px solid #94a3b8 !important;
+  }
+
+  .grades-table td {
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}
+
+/* Table Responsive Wrapper (Enables smooth horizontal scroll on small devices) */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN SYSTEM (Mobile, Tablet, Desktop)
+   ============================================================ */
+
+/* Medium Devices (Tablets, iPads & Small Laptops: max 768px) */
+@media (max-width: 768px) {
+  .max-width-wrapper {
+    padding: 0 1rem;
+  }
+
+  .student-hero-card {
+    padding: 1.25rem 1rem;
+    margin: 1rem 0;
+    border-radius: var(--radius-lg);
+    background: var(--primary) !important;
+  }
+
+  .hero-layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+
+  .hero-profile {
+    gap: 0.85rem;
+  }
+
+  .student-avatar-lg {
+    width: 68px;
+    height: 68px;
+  }
+
+  .hero-info h1 {
+    font-size: 1.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .countdown-widget-box {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0.85rem 1rem !important;
+  }
+
+  .hero-actions {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .hero-actions .btn {
+    flex: 1;
+    font-size: 0.825rem;
+    padding: 0.55rem 0.6rem;
+    justify-content: center;
+    min-height: 40px;
+  }
+
+  .report-card-container {
+    padding: 1.25rem 1rem;
+  }
+
+  .report-header-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .report-header-banner > div:last-child {
+    text-align: left !important;
+  }
+
+  .report-evaluation-section {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .report-signature-block {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .admin-table {
+    min-width: 640px;
+  }
+
+  .grades-table {
+    min-width: 520px;
+  }
+
+  .student-meta-table td {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* Mobile Devices (Smartphones: max 640px) */
+@media (max-width: 640px) {
+  /* Visibility toggles */
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  .show-on-mobile {
+    display: inline !important;
+  }
+
+  /* Top Navigation */
+  .top-nav {
+    padding: 0.5rem 0.85rem;
+  }
+
+  .brand-badge {
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .brand-text-container {
+    min-width: 0;
+  }
+
+  .navbar-logo-img {
+    height: 40px;
+    max-height: 40px;
+    flex-shrink: 0;
+  }
+
+  .brand-title {
+    font-size: 0.95rem;
+    max-width: 175px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .nav-actions {
+    flex-shrink: 0;
+    margin-left: 0.4rem;
+  }
+
+  .nav-mode-btn {
+    padding: 0.42rem 0.7rem;
+    font-size: 0.825rem;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .nav-btn-text-full {
+    display: none;
+  }
+
+  .nav-btn-text-mobile {
+    display: inline;
+  }
+
+  /* Parent Access Top Bar */
+  .parent-top-bar {
+    padding: 0.75rem 0 0.25rem !important;
+    gap: 0.5rem !important;
+  }
+
+  /* KPI Stats Grid (Clean 2x2 Grid on Mobile) */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .stat-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+  }
+
+  /* Cards & Sessions */
+  .card {
+    padding: 1.15rem 0.95rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .session-card {
+    padding: 1.15rem 0.95rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .session-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .session-date-box {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .session-topic-title {
+    font-size: 1.05rem;
+    word-break: break-word;
+  }
+
+  .session-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  /* Tabs Horizontal Scroll */
+  .tabs-container {
+    gap: 0.25rem;
+    margin-bottom: 1.25rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tab-btn {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.825rem;
+    gap: 0.35rem;
+    min-height: 40px;
+    flex-shrink: 0;
+  }
+
+  /* Parent Access Portal */
+  .parent-access-container {
+    padding: 1.5rem 0.75rem;
+    min-height: calc(100vh - 65px);
+  }
+
+  .parent-access-card {
+    padding: 1.5rem 1.15rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .parent-access-logo {
+    height: 58px !important;
+  }
+
+  .pin-input-field {
+    max-width: 240px;
+    height: 54px;
+    font-size: 1.5rem;
+    letter-spacing: 0.25em;
+  }
+
+  .parent-access-props {
+    gap: 0.65rem;
+    padding-top: 1.25rem;
+    margin-top: 1.25rem;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .parent-access-prop-item {
+    font-size: 0.78rem;
+  }
+
+  /* Report Card Mobile Optimizations */
+  .student-meta-table,
+  .student-meta-table tbody,
+  .student-meta-table tr,
+  .student-meta-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .student-meta-table td {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .report-signature-block {
+    width: 100%;
+  }
+
+  .sig-line {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  /* Teacher Admin Mobile Navigation */
+  .admin-nav-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .admin-nav-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 38px !important;
+    font-size: 0.8rem !important;
+    padding: 0.45rem 0.55rem !important;
+  }
+
+  .teacher-auth-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .teacher-auth-card {
+    padding: 1.5rem 1.15rem;
+    border-radius: var(--radius-lg);
+  }
+
+  /* Modals Mobile Touch Fitting */
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-lg);
+    max-height: 94vh;
+    width: 100%;
+  }
+
+  .modal-actions {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .modal-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 42px !important;
+  }
+
+  /* Toast Notification */
+  .toast {
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    justify-content: center;
+    max-width: calc(100% - 32px);
+    font-size: 0.85rem;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Extra Compact Phones (e.g. iPhone SE, Galaxy Fold outer: max 380px) */
+@media (max-width: 380px) {
+  .top-nav {
+    padding: 0.45rem 0.6rem;
+  }
+
+  .brand-title {
+    max-width: 125px;
+    font-size: 0.85rem;
+  }
+
+  .navbar-logo-img {
+    height: 35px;
+    max-height: 35px;
+  }
+
+  .nav-mode-btn {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .pin-input-field {
+    max-width: 210px;
+    height: 50px;
+    font-size: 1.35rem;
+    letter-spacing: 0.2em;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .session-footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    gap: 0.5rem;
+  }
+
+  .stat-card {
+    padding: 0.65rem 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+  }
 }

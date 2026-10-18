@@ -60,8 +60,8 @@ export default function FloatingLoader({
       <div style={{
         background: '#ffffff',
         borderRadius: '20px',
-        padding: '2rem 2.25rem',
-        maxWidth: '440px',
+        padding: 'clamp(1.5rem, 5vw, 2rem) clamp(1.2rem, 5vw, 2.25rem)',
+        maxWidth: 'min(92vw, 440px)',
         width: '100%',
         textAlign: 'center',
         boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(2, 132, 199, 0.15)',

@@ -42,6 +42,7 @@ export default function ParentAccess({
             <img
               src="/logo.png"
               alt="Logic Lane Learning Center"
+              className="parent-access-logo"
               style={{
                 height: '76px',
                 width: 'auto',

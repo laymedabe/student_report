@@ -104,7 +104,7 @@ export default function ParentDashboard({
   return (
     <div className="max-width-wrapper" style={{ paddingBottom: '4rem' }}>
       {/* Top Bar for Parent */}
-      <div className="no-print" style={{
+      <div className="no-print parent-top-bar" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -118,13 +118,14 @@ export default function ParentDashboard({
           style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)' }}
         >
           <ArrowLeft size={16} />
-          Switch Student / Enter Another PIN
+          <span className="hide-on-mobile">Switch Student / Enter Another PIN</span>
+          <span className="show-on-mobile">Switch Student</span>
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <KeyRound size={15} color="var(--primary)" />
-            Student PIN: <strong style={{ color: 'var(--primary)', letterSpacing: '0.08em', fontSize: '0.95rem' }}>{displayPin}</strong>
+            <span className="hide-on-mobile">Student </span>PIN: <strong style={{ color: 'var(--primary)', letterSpacing: '0.08em', fontSize: '0.95rem' }}>{displayPin}</strong>
           </span>
           <button
             className="btn btn-secondary btn-sm"
@@ -132,7 +133,8 @@ export default function ParentDashboard({
             title="Copy shareable link for WhatsApp/Email"
           >
             <Share2 size={14} />
-            Share Link
+            <span className="hide-on-mobile">Share Link</span>
+            <span className="show-on-mobile">Share</span>
           </button>
         </div>
       </div>
@@ -197,8 +199,8 @@ export default function ParentDashboard({
           </div>
 
           {/* Monthly Sessions Countdown Widget */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.12)',
+          <div className="countdown-widget-box" style={{
+            background: 'rgba(255, 255, 255, 0.14)',
             backdropFilter: 'blur(8px)',
             border: '1px solid rgba(255, 255, 255, 0.25)',
             borderRadius: '16px',
@@ -268,7 +270,8 @@ export default function ParentDashboard({
               style={{ background: '#ffffff', color: 'var(--text-main)', fontWeight: 700 }}
             >
               <Printer size={16} />
-              Print / Save PDF Report
+              <span className="hide-on-mobile">Print / Save PDF Report</span>
+              <span className="show-on-mobile">Print PDF</span>
             </button>
             <button
               className="btn btn-primary btn-sm"
@@ -276,7 +279,8 @@ export default function ParentDashboard({
               style={{ background: '#fbbf24', color: '#0f172a', fontWeight: 700, border: 'none' }}
             >
               <Sparkles size={16} />
-              Celebrate Progress! 🎉
+              <span className="hide-on-mobile">Celebrate Progress! 🎉</span>
+              <span className="show-on-mobile">Celebrate! 🎉</span>
             </button>
           </div>
         </div>
@@ -447,7 +451,7 @@ export default function ParentDashboard({
           {/* Teacher Contact & Message */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
             gap: '1.5rem',
             marginTop: '1.5rem'
           }}>
@@ -849,7 +853,8 @@ export default function ParentDashboard({
               onClick={handlePrint}
             >
               <Printer size={18} />
-              Print / Save as PDF
+              <span className="hide-on-mobile">Print / Save as PDF</span>
+              <span className="show-on-mobile">Save PDF</span>
             </button>
           </div>
 
@@ -905,34 +910,36 @@ export default function ParentDashboard({
             <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: '#0f172a' }}>
               Academic Subject Performance & Mastery
             </h4>
-            <table className="grades-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '25%' }}>Subject</th>
-                  <th style={{ width: '20%' }}>Grade</th>
-                  <th style={{ width: '25%' }}>Mastery Level</th>
-                  <th style={{ width: '30%' }}>Teacher Observations</th>
-                </tr>
-              </thead>
-              <tbody>
-                {latestReport?.subjectEvaluations && latestReport.subjectEvaluations.length > 0 ? (
-                  latestReport.subjectEvaluations.map((evalItem, i) => (
-                    <tr key={i}>
-                      <td style={{ fontWeight: 700 }}>{evalItem.subject}</td>
-                      <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{evalItem.grade}</td>
-                      <td>{evalItem.mastery}</td>
-                      <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{evalItem.comment}</td>
-                    </tr>
-                  ))
-                ) : (
+            <div className="table-responsive">
+              <table className="grades-table">
+                <thead>
                   <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
-                      No evaluation entries recorded yet.
-                    </td>
+                    <th style={{ width: '25%' }}>Subject</th>
+                    <th style={{ width: '20%' }}>Grade</th>
+                    <th style={{ width: '25%' }}>Mastery Level</th>
+                    <th style={{ width: '30%' }}>Teacher Observations</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {latestReport?.subjectEvaluations && latestReport.subjectEvaluations.length > 0 ? (
+                    latestReport.subjectEvaluations.map((evalItem, i) => (
+                      <tr key={i}>
+                        <td style={{ fontWeight: 700 }}>{evalItem.subject}</td>
+                        <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{evalItem.grade}</td>
+                        <td>{evalItem.mastery}</td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{evalItem.comment}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
+                        No evaluation entries recorded yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
             {/* Strengths & Growth Matrix */}
             <div className="report-evaluation-section">
