@@ -56,8 +56,8 @@ export default function Navbar({
               aria-label="Return to Teacher Admin Mode"
             >
               <ArrowLeft size={16} />
-              <span className="nav-btn-text-full">Return to Teacher Admin</span>
-              <span className="nav-btn-text-mobile">Admin</span>
+              <span className="nav-btn-text-full">Return</span>
+              <span className="nav-btn-text-mobile"></span>
             </button>
           ) : currentMode === 'teacher' ? (
             <button
