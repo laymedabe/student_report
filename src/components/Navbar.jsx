@@ -16,17 +16,25 @@ export default function Navbar({
         <div
           className="brand-badge"
           onClick={onGoHome}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
         >
-          <div className="brand-icon">
-            <GraduationCap size={20} />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Logic Lane Learning Center"
+            className="navbar-logo-img"
+            style={{
+              height: '46px',
+              width: 'auto',
+              maxHeight: '46px',
+              objectFit: 'contain'
+            }}
+          />
           <div>
             <div className="brand-title">
-              {centerName || 'Apex Scholars'}
+              {centerName || 'Logic Lane Learning Center'}
             </div>
-            <div className="brand-subtitle">
-              Learning & Tutorial Hub
+            <div className="brand-subtitle" style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.04em' }}>
+              Learning Center • Excellentia Valores Competentia
             </div>
           </div>
         </div>

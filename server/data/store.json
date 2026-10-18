@@ -6,15 +6,15 @@
       "email": "sample@email.com",
       "passcode": "1234",
       "phone": "",
-      "centerName": "skwelahan ni kleeser",
+      "centerName": "Logic Lane Learning Center",
       "address": "Sambag jaro",
       "avatar": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80",
       "createdAt": "2026-01-01T00:00:00.000Z"
     }
   ],
   "center": {
-    "name": "skwelahan ni kleeser",
-    "tagline": "Empowering Minds, Inspiring Lifelong Academic Confidence",
+    "name": "Logic Lane Learning Center",
+    "tagline": "Excellentia • Valores • Competentia",
     "tutorName": "Sir Kleeser",
     "tutorTitle": "Lead Academic Coach & Learning Specialist",
     "email": "sample@email.com",

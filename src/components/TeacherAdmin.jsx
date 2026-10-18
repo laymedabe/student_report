@@ -129,8 +129,8 @@ export default function TeacherAdmin({
   });
 
   const [centerForm, setCenterForm] = useState({
-    name: currentTeacher?.centerName || center?.name || '',
-    tagline: center?.tagline || '',
+    name: currentTeacher?.centerName || center?.name || 'Logic Lane Learning Center',
+    tagline: center?.tagline || 'Excellentia • Valores • Competentia',
     tutorName: currentTeacher?.name || center?.tutorName || '',
     phone: currentTeacher?.phone || center?.phone || '',
     email: currentTeacher?.email || center?.email || '',
@@ -217,7 +217,7 @@ export default function TeacherAdmin({
           name: regName.trim(),
           email: regEmail.trim(),
           passcode: regPasscode.trim(),
-          centerName: regCenterName.trim() || 'Tutorial Center',
+          centerName: regCenterName.trim() || 'Logic Lane Learning Center',
           avatar: regAvatar,
           phone: regPhone.trim()
         })
@@ -897,19 +897,28 @@ export default function TeacherAdmin({
           boxShadow: 'var(--shadow-xl)',
           border: '1px solid var(--border-light)'
         }}>
-          {/* Header Icon */}
+          {/* Header Logo */}
+          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+            <img
+              src="/logo.png"
+              alt="Logic Lane Learning Center"
+              style={{ height: '64px', width: 'auto', objectFit: 'contain' }}
+            />
+          </div>
+
           <div style={{
-            width: '54px',
-            height: '54px',
+            width: '50px',
+            height: '50px',
             borderRadius: 'var(--radius-lg)',
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%)',
+            background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent-emerald) 100%)',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 1.25rem'
+            margin: '0 auto 1.25rem',
+            boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)'
           }}>
-            {authTab === 'login' ? <Lock size={26} /> : <UserPlus size={26} />}
+            {authTab === 'login' ? <Lock size={24} /> : <UserPlus size={24} />}
           </div>
 
           <h2 style={{ fontSize: '1.6rem', marginBottom: '0.35rem', textAlign: 'center' }}>
@@ -1233,7 +1242,7 @@ export default function TeacherAdmin({
                 borderRadius: '50%',
                 objectFit: 'cover',
                 border: '3px solid white',
-                boxShadow: '0 2px 10px rgba(79, 70, 229, 0.25)',
+                boxShadow: '0 2px 10px rgba(2, 132, 199, 0.25)',
                 display: 'block'
               }}
             />
@@ -1302,7 +1311,7 @@ export default function TeacherAdmin({
           {/* Quick Stats Overview */}
           <div className="stats-grid" style={{ marginBottom: '1.5rem' }}>
             <div className="stat-card">
-              <div className="stat-icon" style={{ background: '#eef2ff', color: '#4f46e5' }}>
+              <div className="stat-icon" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
                 <Users size={24} />
               </div>
               <div className="stat-content">
@@ -1854,7 +1863,7 @@ export default function TeacherAdmin({
                           }}
                         >
                           <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{sub.subject}:</span>
-                          <span style={{ color: '#4f46e5', fontWeight: 700 }}>{sub.grade || '—'}</span>
+                          <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{sub.grade || '—'}</span>
                           <span className="badge badge-indigo" style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem' }}>
                             {sub.mastery || 'Proficient'}
                           </span>
@@ -2004,7 +2013,7 @@ export default function TeacherAdmin({
                     borderRadius: '50%',
                     objectFit: 'cover',
                     border: '3px solid var(--primary)',
-                    boxShadow: '0 4px 14px rgba(79, 70, 229, 0.25)',
+                    boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
                     display: 'block'
                   }}
                 />
@@ -2207,7 +2216,7 @@ export default function TeacherAdmin({
                       borderRadius: '50%',
                       objectFit: 'cover',
                       border: '3px solid var(--primary)',
-                      boxShadow: '0 3px 10px rgba(79, 70, 229, 0.2)',
+                      boxShadow: '0 3px 10px rgba(2, 132, 199, 0.2)',
                       display: 'block'
                     }}
                   />

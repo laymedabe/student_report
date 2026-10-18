@@ -1,23 +1,34 @@
 /* ============================================================
-   APEX SCHOLARS & LEARNING CENTER DESIGN SYSTEM
+   LOGIC LANE LEARNING CENTER DESIGN SYSTEM
    Modern, Warm, Professional Educational Styling with PIN Access
+   Palette: Academic Azure Blue (#0284c7) & Growth Emerald Green (#16a34a)
    ============================================================ */
 
 :root {
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Colors */
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-light: #eef2ff;
-  --primary-glow: rgba(79, 70, 229, 0.15);
+  /* Brand Colors (Directly matched to Logic Lane Learning Center Logo) */
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-dark: #075985;
+  --primary-light: #f0f9ff;
+  --primary-glow: rgba(2, 132, 199, 0.18);
 
-  --accent-purple: #7c3aed;
-  --accent-teal: #0d9488;
+  --brand-blue: #0284c7;
+  --brand-blue-dark: #0369a1;
+  --brand-cyan: #0ea5e9;
+  --brand-green: #22c55e;
+  --brand-green-dark: #16a34a;
+  --brand-green-light: #dcfce7;
+
+  --accent-emerald: #16a34a;
+  --accent-green: #22c55e;
+  --accent-teal: #0891b2;
+  --accent-cyan: #0ea5e9;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
-  --accent-emerald: #10b981;
+  --accent-purple: #6366f1;
 
   --bg-app: #f8fafc;
   --bg-card: #ffffff;
@@ -36,7 +47,7 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  --shadow-glow: 0 0 25px rgba(79, 70, 229, 0.18);
+  --shadow-glow: 0 0 25px rgba(2, 132, 199, 0.2);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -149,12 +160,12 @@ a {
   width: 38px;
   height: 38px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent-emerald) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
 }
 
 .nav-actions {
@@ -180,12 +191,12 @@ a {
 .btn-primary {
   background: var(--primary);
   color: white;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
 }
 
 .btn-primary:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
   transform: translateY(-1px);
 }
 
@@ -1116,7 +1127,7 @@ a {
   justify-content: center;
   align-items: center;
   padding: 2.5rem 1rem;
-  background: radial-gradient(circle at 50% 15%, rgba(79, 70, 229, 0.08) 0%, transparent 65%);
+  background: radial-gradient(circle at 50% 15%, rgba(2, 132, 199, 0.12) 0%, rgba(34, 197, 94, 0.04) 40%, transparent 70%);
 }
 
 .parent-access-card {
@@ -1155,7 +1166,7 @@ a {
   outline: none;
   background: #ffffff;
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 12px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 12px rgba(2, 132, 199, 0.15);
 }
 
 .pin-input-field.error {

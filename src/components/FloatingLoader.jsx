@@ -64,17 +64,24 @@ export default function FloatingLoader({
         maxWidth: '440px',
         width: '100%',
         textAlign: 'center',
-        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(79, 70, 229, 0.1)',
+        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(2, 132, 199, 0.15)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '1rem'
+        gap: '0.85rem'
       }}>
+        {/* Brand Logo */}
+        <img
+          src="/logo.png"
+          alt="Logic Lane Learning Center"
+          style={{ height: '44px', width: 'auto', objectFit: 'contain' }}
+        />
+
         {/* Animated Glowing Ring & Spinner */}
         <div style={{
           position: 'relative',
-          width: '68px',
-          height: '68px',
+          width: '60px',
+          height: '60px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
@@ -84,11 +91,11 @@ export default function FloatingLoader({
             width: '100%',
             height: '100%',
             borderRadius: '50%',
-            border: '4px solid #e0e7ff',
-            borderTopColor: '#4f46e5',
+            border: '4px solid #e0f2fe',
+            borderTopColor: '#0284c7',
             animation: 'spinLoader 1s linear infinite'
           }} />
-          <Sparkles size={24} color="#4f46e5" />
+          <Sparkles size={22} color="#0284c7" />
         </div>
 
         {/* Headline & Subtitle */}
@@ -115,13 +122,13 @@ export default function FloatingLoader({
         {/* Dynamic Progress / Delay Indicator */}
         <div style={{
           width: '100%',
-          marginTop: '0.5rem'
+          marginTop: '0.35rem'
         }}>
-          {/* Animated Gradient Bar */}
+          {/* Animated Gradient Bar matching Logo (Blue -> Sky -> Green -> Blue) */}
           <div style={{
             width: '100%',
             height: '6px',
-            background: 'linear-gradient(90deg, #4f46e5, #818cf8, #c084fc, #4f46e5)',
+            background: 'linear-gradient(90deg, #0284c7, #38bdf8, #22c55e, #0284c7)',
             backgroundSize: '200% 200%',
             animation: 'pulseProgress 2s ease infinite',
             borderRadius: '999px',

@@ -303,7 +303,7 @@ export default function ParentDashboard({
       {/* Quick KPI Stats Grid */}
       <div className="stats-grid no-print">
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#eef2ff', color: '#4f46e5' }}>
+          <div className="stat-icon" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
             <Calendar size={26} />
           </div>
           <div className="stat-content">
@@ -498,8 +498,8 @@ export default function ParentDashboard({
         <div>
           {/* Monthly Sessions Allowance Status Banner */}
           <div style={{
-            background: 'linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)',
-            border: '1px solid #c7d2fe',
+            background: 'linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%)',
+            border: '1px solid #bae6fd',
             borderRadius: 'var(--radius-lg)',
             padding: '1rem 1.25rem',
             marginBottom: '1.25rem',
@@ -770,8 +770,8 @@ export default function ParentDashboard({
               <div
                 onClick={triggerConfetti}
                 style={{
-                  background: '#eef2ff',
-                  border: '1px solid #c7d2fe',
+                  background: '#f0f9ff',
+                  border: '1px solid #bae6fd',
                   padding: '1rem 1.25rem',
                   borderRadius: 'var(--radius-lg)',
                   display: 'flex',
@@ -782,7 +782,7 @@ export default function ParentDashboard({
               >
                 <div style={{ fontSize: '1.75rem' }}>📐</div>
                 <div>
-                  <strong style={{ display: 'block', fontSize: '0.9rem', color: '#3730a3' }}>
+                  <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--primary-hover)' }}>
                     Word Problem Master
                   </strong>
                   <span style={{ fontSize: '0.75rem', color: '#4338ca' }}>Multi-step problem solver</span>
@@ -857,15 +857,22 @@ export default function ParentDashboard({
           <div className="report-card-container">
             {/* Center Header */}
             <div className="report-header-banner">
-              <div>
-                <div className="report-center-title">
-                  {center?.name || 'Apex Scholars Learning Center'}
-                </div>
-                <div className="report-center-motto">
-                  {center?.tagline || 'Empowering Minds, Inspiring Lifelong Academic Confidence'}
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', marginTop: '0.35rem' }}>
-                  {center?.address} • {center?.phone} • {center?.email}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <img
+                  src="/logo.png"
+                  alt="Logic Lane Learning Center"
+                  style={{ height: '56px', width: 'auto', objectFit: 'contain' }}
+                />
+                <div>
+                  <div className="report-center-title">
+                    {center?.name || 'Logic Lane Learning Center'}
+                  </div>
+                  <div className="report-center-motto">
+                    {center?.tagline || 'Excellentia • Valores • Competentia'}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', marginTop: '0.35rem' }}>
+                    {center?.address} • {center?.phone} • {center?.email}
+                  </div>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>

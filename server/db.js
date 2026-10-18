@@ -324,8 +324,8 @@ export async function getCenterInfo() {
         const { passcode, ...publicInfo } = data;
         return {
           id: data.id || 'center-1',
-          name: data.name || localData.center?.name || 'skwelahan ni kleeser',
-          tagline: data.tagline || localData.center?.tagline || 'Empowering Minds, Inspiring Lifelong Academic Confidence',
+          name: data.name || localData.center?.name || 'Logic Lane Learning Center',
+          tagline: data.tagline || localData.center?.tagline || 'Excellentia • Valores • Competentia',
           tutorName: data.tutor_name || localData.center?.tutorName || 'Sir Kleeser',
           tutorTitle: data.tutor_title || localData.center?.tutorTitle || 'Lead Academic Coach',
           phone: data.phone || localData.center?.phone || '',
@@ -342,8 +342,8 @@ export async function getCenterInfo() {
   const { passcode, ...publicInfo } = center;
   return {
     id: center.id || 'center-1',
-    name: center.name || 'skwelahan ni kleeser',
-    tagline: center.tagline || 'Empowering Minds, Inspiring Lifelong Academic Confidence',
+    name: center.name || 'Logic Lane Learning Center',
+    tagline: center.tagline || 'Excellentia • Valores • Competentia',
     tutorName: center.tutorName || 'Sir Kleeser',
     tutorTitle: center.tutorTitle || 'Lead Academic Coach',
     phone: center.phone || '',

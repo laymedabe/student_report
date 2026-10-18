@@ -37,6 +37,15 @@ export default function ParentAccess({
         width: '100%'
       }}>
         <div className="parent-access-card">
+          {/* Brand Logo */}
+          <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'center' }}>
+            <img
+              src="/logo.png"
+              alt="Logic Lane Learning Center"
+              style={{ height: '76px', width: 'auto', objectFit: 'contain' }}
+            />
+          </div>
+
           {/* Badge */}
           <div style={{
             display: 'inline-flex',
@@ -49,7 +58,7 @@ export default function ParentAccess({
             padding: '0.4rem 0.95rem',
             borderRadius: 'var(--radius-full)',
             marginBottom: '1.25rem',
-            border: '1px solid rgba(79, 70, 229, 0.2)'
+            border: '1px solid rgba(2, 132, 199, 0.25)'
           }}>
             <KeyRound size={16} />
             Direct Parent Access Portal
@@ -165,7 +174,7 @@ export default function ParentAccess({
         color: 'var(--text-muted)',
         padding: '1.25rem 0'
       }}>
-        <div>{centerInfo?.name || 'Apex Scholars'} • {centerInfo?.activeTerm || 'Academic Year 2026'}</div>
+        <div>{centerInfo?.name || 'Logic Lane Learning Center'} • {centerInfo?.activeTerm || 'Academic Year 2026'}</div>
         {!isParentLink && onTeacherClick && (
           <div style={{ marginTop: '0.65rem' }}>
             <button
