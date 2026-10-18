@@ -886,7 +886,7 @@ export default function TeacherAdmin({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1.5rem',
-        background: 'radial-gradient(circle at top right, #e0e7ff 0%, #f8fafc 60%)'
+        background: 'var(--bg-app)'
       }}>
         <div style={{
           background: 'white',

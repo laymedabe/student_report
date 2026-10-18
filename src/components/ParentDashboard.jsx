@@ -212,7 +212,7 @@ export default function ParentDashboard({
             boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e0e7ff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e0f2fe', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <Calendar size={15} color="#fbbf24" />
                 {monthName} Sessions
               </span>
@@ -221,7 +221,7 @@ export default function ParentDashboard({
                 fontWeight: 700,
                 padding: '0.2rem 0.55rem',
                 borderRadius: '12px',
-                background: isMonthFinished ? '#10b981' : 'rgba(255, 255, 255, 0.2)',
+                background: isMonthFinished ? '#16a34a' : 'rgba(255, 255, 255, 0.22)',
                 color: 'white'
               }}>
                 {isMonthFinished ? 'All Done! 🎉' : `${remainingThisMonth} Left`}
@@ -229,10 +229,10 @@ export default function ParentDashboard({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: isMonthFinished ? '#34d399' : '#ffffff' }}>
+              <span style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: isMonthFinished ? '#86efac' : '#ffffff' }}>
                 {remainingThisMonth}
               </span>
-              <span style={{ fontSize: '0.95rem', color: '#c7d2fe', fontWeight: 500 }}>
+              <span style={{ fontSize: '0.95rem', color: '#e0f2fe', fontWeight: 500 }}>
                 of {monthlyQuota} sessions left
               </span>
             </div>
@@ -241,7 +241,7 @@ export default function ParentDashboard({
             <div style={{
               width: '100%',
               height: '8px',
-              background: 'rgba(255, 255, 255, 0.2)',
+              background: 'rgba(255, 255, 255, 0.22)',
               borderRadius: '999px',
               overflow: 'hidden',
               marginBottom: '0.35rem'
@@ -249,13 +249,13 @@ export default function ParentDashboard({
               <div style={{
                 width: `${monthPercent}%`,
                 height: '100%',
-                background: isMonthFinished ? '#10b981' : '#fbbf24',
+                background: isMonthFinished ? '#22c55e' : '#fbbf24',
                 borderRadius: '999px',
                 transition: 'width 0.4s ease'
               }} />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#e0e7ff' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#e0f2fe' }}>
               <span>{completedThisMonth} conducted</span>
               <span>{monthPercent}% completed</span>
             </div>
@@ -265,7 +265,7 @@ export default function ParentDashboard({
             <button
               className="btn btn-secondary btn-sm"
               onClick={handlePrint}
-              style={{ background: 'rgba(255, 255, 255, 0.9)', color: '#1e1b4b', fontWeight: 700 }}
+              style={{ background: '#ffffff', color: 'var(--text-main)', fontWeight: 700 }}
             >
               <Printer size={16} />
               Print / Save PDF Report
@@ -273,7 +273,7 @@ export default function ParentDashboard({
             <button
               className="btn btn-primary btn-sm"
               onClick={triggerConfetti}
-              style={{ background: '#f59e0b', color: '#1e1b4b', fontWeight: 700 }}
+              style={{ background: '#fbbf24', color: '#0f172a', fontWeight: 700, border: 'none' }}
             >
               <Sparkles size={16} />
               Celebrate Progress! 🎉
@@ -285,9 +285,9 @@ export default function ParentDashboard({
           <div style={{
             marginTop: '1.5rem',
             paddingTop: '1.25rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.2)',
             fontSize: '0.9rem',
-            color: '#e0e7ff',
+            color: '#e0f2fe',
             display: 'flex',
             alignItems: 'center',
             gap: '0.6rem'
@@ -498,7 +498,7 @@ export default function ParentDashboard({
         <div>
           {/* Monthly Sessions Allowance Status Banner */}
           <div style={{
-            background: 'linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%)',
+            background: '#f0f9ff',
             border: '1px solid #bae6fd',
             borderRadius: 'var(--radius-lg)',
             padding: '1rem 1.25rem',
