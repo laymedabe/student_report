@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Users,
   Plus,
@@ -163,7 +163,15 @@ export default function TeacherAdmin({
     }
   }, [currentTeacher, center]);
 
-  const activeStudent = students.find(s => s.id === selectedStudentId);
+  const [studentOverrides, setStudentOverrides] = useState({});
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
+  const [quickQuotaValue, setQuickQuotaValue] = useState(12);
+
+  const mergedStudents = useMemo(() => {
+    return (students || []).map(s => studentOverrides[s.id] ? { ...s, ...studentOverrides[s.id] } : s);
+  }, [students, studentOverrides]);
+
+  const activeStudent = mergedStudents.find(s => s.id === selectedStudentId);
 
   // Authentication submission (Sign In)
   const handleLogin = async (e) => {
@@ -337,6 +345,18 @@ export default function TeacherAdmin({
       }
 
       if (res.ok && data.success) {
+        if (editingStudentId) {
+          const quotaVal = Number(newStudent.monthlySessions) > 0 ? Number(newStudent.monthlySessions) : 12;
+          setStudentOverrides(prev => ({
+            ...prev,
+            [editingStudentId]: {
+              ...(prev[editingStudentId] || {}),
+              ...newStudent,
+              monthlySessions: quotaVal,
+              id: editingStudentId
+            }
+          }));
+        }
         setShowAddStudentModal(false);
         setEditingStudentId(null);
         setNewStudent({
@@ -372,6 +392,47 @@ export default function TeacherAdmin({
         type: 'error',
         message: err.message || (editingStudentId ? 'Failed to update student profile' : 'Failed to create student')
       });
+    }
+  };
+
+  // Quick Monthly Quota Save Handler
+  const handleSaveQuickQuota = async (e) => {
+    e.preventDefault();
+    if (!activeStudent) return;
+    const quotaNum = parseInt(quickQuotaValue, 10);
+    if (isNaN(quotaNum) || quotaNum < 1) {
+      onShowToast({ type: 'error', message: 'Please enter a valid session count (minimum 1)' });
+      return;
+    }
+
+    // Immediate optimistic update
+    setStudentOverrides(prev => ({
+      ...prev,
+      [activeStudent.id]: {
+        ...(prev[activeStudent.id] || activeStudent),
+        monthlySessions: quotaNum
+      }
+    }));
+    setShowQuotaModal(false);
+
+    try {
+      const res = await fetch(`/api/students/${activeStudent.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ monthlySessions: quotaNum })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        onRefreshData();
+        onShowToast({
+          type: 'success',
+          message: `Updated monthly quota for ${activeStudent.fullName} to ${quotaNum} sessions!`
+        });
+      } else {
+        onShowToast({ type: 'error', message: data.message || 'Failed to update quota' });
+      }
+    } catch (err) {
+      onShowToast({ type: 'error', message: 'Network error updating monthly quota' });
     }
   };
 
@@ -663,17 +724,17 @@ export default function TeacherAdmin({
   };
 
   // Filter students
-  const filteredStudents = students.filter(s => {
+  const filteredStudents = mergedStudents.filter(s => {
     const q = searchQuery.toLowerCase();
     const pin = (s.pinCode || s.accessCode || '').toLowerCase();
-    return s.fullName.toLowerCase().includes(q) ||
-      s.grade.toLowerCase().includes(q) ||
+    return (s.fullName || '').toLowerCase().includes(q) ||
+      (s.grade || '').toLowerCase().includes(q) ||
       pin.includes(q) ||
-      s.parentName.toLowerCase().includes(q);
+      (s.parentName || '').toLowerCase().includes(q);
   });
 
-  const totalSessionsCount = students.reduce((sum, s) => sum + (s.sessions?.length || 0), 0);
-  const totalReportsCount = students.reduce((sum, s) => sum + (s.reports?.length || 0), 0);
+  const totalSessionsCount = mergedStudents.reduce((sum, s) => sum + (s.sessions?.length || 0), 0);
+  const totalReportsCount = mergedStudents.reduce((sum, s) => sum + (s.reports?.length || 0), 0);
 
   // -------------------------------------------------------------
   // VIEW: TEACHER LOGIN SCREEN
@@ -1441,8 +1502,11 @@ export default function TeacherAdmin({
                     </div>
                     <button
                       className="btn btn-ghost btn-sm"
-                      style={{ fontSize: '0.8rem', color: 'var(--primary)', padding: '0.2rem 0.5rem' }}
-                      onClick={() => handleOpenEditStudent(activeStudent)}
+                      style={{ fontSize: '0.8rem', color: 'var(--primary)', padding: '0.2rem 0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      onClick={() => {
+                        setQuickQuotaValue(activeStudent.monthlySessions || 12);
+                        setShowQuotaModal(true);
+                      }}
                       title="Adjust monthly sessions quota"
                     >
                       <Edit3 size={13} /> Change Monthly Quota
@@ -2428,6 +2492,66 @@ export default function TeacherAdmin({
                 <Share2 size={16} /> Copy Full Message
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* QUICK MODAL: CHANGE MONTHLY QUOTA */}
+      {showQuotaModal && activeStudent && (
+        <div className="modal-overlay" onClick={() => setShowQuotaModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Update Monthly Package</h3>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Set monthly sessions quota for {activeStudent.fullName}
+                </span>
+              </div>
+              <button className="btn btn-ghost" onClick={() => setShowQuotaModal(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleSaveQuickQuota} style={{ marginTop: '1.25rem' }}>
+              <div className="form-group">
+                <label className="form-label" style={{ fontWeight: 700, marginBottom: '0.5rem' }}>
+                  Monthly Sessions Quota
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    className="form-input"
+                    value={quickQuotaValue}
+                    onChange={(e) => setQuickQuotaValue(e.target.value)}
+                    style={{ fontSize: '1.35rem', fontWeight: 800, textAlign: 'center', width: '130px', color: 'var(--primary)' }}
+                    autoFocus
+                    required
+                  />
+                  <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                    sessions per month
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.65rem' }}>
+                  💡 The counter automatically decreases each month as tutoring sessions are marked done/finished.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowQuotaModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ minWidth: '120px' }}
+                >
+                  Save Quota
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

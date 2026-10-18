@@ -405,6 +405,29 @@ export async function updateCenterInfo(updateData) {
 }
 
 // -------------------------------------------------------------
+// MONTHLY SESSIONS QUOTA PERSISTENCE HELPERS
+// (Persists quota reliably in Supabase across serverless lambda instances)
+// -------------------------------------------------------------
+export function parseMonthlySessions(learningGoalsRaw, localVal) {
+  if (typeof learningGoalsRaw === 'string') {
+    const match = learningGoalsRaw.match(/<!--\s*quota:(\d+)\s*-->/i) || learningGoalsRaw.match(/\[\[quota:(\d+)\]\]/i);
+    if (match && Number(match[1]) > 0) return Number(match[1]);
+  }
+  return localVal !== undefined && Number(localVal) > 0 ? Number(localVal) : 12;
+}
+
+export function stripQuotaTag(text) {
+  if (typeof text !== 'string') return text || '';
+  return text.replace(/<!--\s*quota:\d+\s*-->/gi, '').replace(/\[\[quota:\d+\]\]/gi, '').trim();
+}
+
+export function attachQuotaTag(text, quota) {
+  const clean = stripQuotaTag(text || 'Develop strong study habits and subject mastery.');
+  const q = Number(quota) > 0 ? Number(quota) : 12;
+  return `${clean}<!--quota:${q}-->`;
+}
+
+// -------------------------------------------------------------
 // STUDENT & PARENT PORTAL
 // -------------------------------------------------------------
 export async function getStudentByPin(inputPin) {
@@ -437,9 +460,10 @@ export async function getStudentByPin(inputPin) {
           .order('issue_date', { ascending: false });
 
         const localRec = (localData.students || []).find(ls => ls.id === student.id);
+        const parsedQuota = parseMonthlySessions(student.learning_goals, localRec?.monthlySessions);
         const monthlyQuota = student.monthly_sessions !== undefined && student.monthly_sessions !== null
           ? Number(student.monthly_sessions)
-          : (localRec?.monthlySessions !== undefined ? Number(localRec.monthlySessions) : 12);
+          : parsedQuota;
 
         return {
           id: student.id,
@@ -455,7 +479,7 @@ export async function getStudentByPin(inputPin) {
           enrolledDate: student.enrolled_date,
           status: student.status,
           avatar: student.avatar,
-          learningGoals: student.learning_goals,
+          learningGoals: stripQuotaTag(student.learning_goals),
           monthlySessions: monthlyQuota,
           teacherId: student.teacher_id || 'teacher-1',
           teacher: await getTeacherById(student.teacher_id || 'teacher-1'),
@@ -544,9 +568,10 @@ export async function getAllStudents(teacherId) {
       if (!error && students) {
         const mapped = (students || []).map(student => {
           const localRec = (localData.students || []).find(ls => ls.id === student.id);
+          const parsedQuota = parseMonthlySessions(student.learning_goals, localRec?.monthlySessions);
           const monthlyQuota = student.monthly_sessions !== undefined && student.monthly_sessions !== null
             ? Number(student.monthly_sessions)
-            : (localRec?.monthlySessions !== undefined ? Number(localRec.monthlySessions) : 12);
+            : parsedQuota;
 
           return {
             id: student.id,
@@ -563,7 +588,7 @@ export async function getAllStudents(teacherId) {
             enrolledDate: student.enrolled_date,
             status: student.status,
             avatar: student.avatar,
-            learningGoals: student.learning_goals,
+            learningGoals: stripQuotaTag(student.learning_goals),
             monthlySessions: monthlyQuota,
             sessions: (student.sessions || []).map(s => ({
               id: s.id,
@@ -634,6 +659,8 @@ export async function createStudent(studentData) {
   const assignedTeacherId = studentData.teacherId || 'teacher-1';
   const monthlySessions = Number(studentData.monthlySessions) > 0 ? Number(studentData.monthlySessions) : 12;
   const processedAvatar = saveBase64Avatar(studentData.avatar) || 'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80';
+  const rawGoals = studentData.learningGoals || 'Develop strong study habits and subject mastery.';
+  const taggedGoals = attachQuotaTag(rawGoals, monthlySessions);
 
   const localData = loadLocalData();
   if (!localData.students) localData.students = [];
@@ -668,7 +695,7 @@ export async function createStudent(studentData) {
     enrolledDate: new Date().toISOString().split('T')[0],
     status: 'Active',
     avatar: processedAvatar,
-    learningGoals: studentData.learningGoals || 'Develop strong study habits and subject mastery.',
+    learningGoals: stripQuotaTag(rawGoals),
     monthlySessions: monthlySessions,
     sessions: [],
     reports: []
@@ -692,7 +719,7 @@ export async function createStudent(studentData) {
         enrolled_date: studentRecord.enrolledDate,
         status: studentRecord.status,
         avatar: studentRecord.avatar,
-        learning_goals: studentRecord.learningGoals
+        learning_goals: taggedGoals
       };
 
       let { data, error } = await supabase.from('students').insert([supabasePayload]).select().single();
@@ -748,11 +775,30 @@ export async function updateStudent(id, studentData) {
     if (studentData.parentPhone !== undefined) payload.parent_phone = studentData.parentPhone;
     if (studentData.parentEmail !== undefined) payload.parent_email = studentData.parentEmail;
     if (studentData.status !== undefined) payload.status = studentData.status;
-    if (studentData.learningGoals !== undefined) payload.learning_goals = studentData.learningGoals;
     if (processedAvatar !== undefined) payload.avatar = processedAvatar;
     if (studentData.pinCode) {
       payload.pin_code = studentData.pinCode.trim();
       payload.access_code = studentData.pinCode.trim();
+    }
+
+    // Persist monthly sessions quota tag in learning_goals
+    if (targetMonthly !== undefined || studentData.learningGoals !== undefined) {
+      let baseGoals = studentData.learningGoals;
+      let effectiveQuota = targetMonthly;
+
+      // If either baseGoals or effectiveQuota is missing, fetch current from Supabase
+      if (baseGoals === undefined || effectiveQuota === undefined) {
+        try {
+          const { data: current } = await supabase.from('students').select('learning_goals').eq('id', id).maybeSingle();
+          if (current?.learning_goals) {
+            if (baseGoals === undefined) baseGoals = stripQuotaTag(current.learning_goals);
+            if (effectiveQuota === undefined) effectiveQuota = parseMonthlySessions(current.learning_goals, 12);
+          }
+        } catch (_) {}
+      }
+
+      const finalQuota = effectiveQuota !== undefined ? effectiveQuota : (targetMonthly || 12);
+      payload.learning_goals = attachQuotaTag(baseGoals || 'Develop strong study habits and subject mastery.', finalQuota);
     }
 
     try {
@@ -770,8 +816,8 @@ export async function updateStudent(id, studentData) {
             parentPhone: row.parent_phone,
             parentEmail: row.parent_email,
             enrolledDate: row.enrolled_date,
-            learningGoals: row.learning_goals,
-            monthlySessions: targetMonthly !== undefined ? targetMonthly : (row.monthly_sessions || 12)
+            learningGoals: stripQuotaTag(row.learning_goals),
+            monthlySessions: targetMonthly !== undefined ? targetMonthly : parseMonthlySessions(row.learning_goals, 12)
           };
         }
       }
@@ -797,7 +843,8 @@ export async function updateStudent(id, studentData) {
     subjects,
     pinCode: updatedPin,
     accessCode: updatedPin,
-    monthlySessions: targetMonthly !== undefined ? targetMonthly : (idx !== -1 ? (data.students[idx].monthlySessions || 12) : 12),
+    learningGoals: stripQuotaTag(studentData.learningGoals !== undefined ? studentData.learningGoals : (updatedStudent?.learningGoals || (idx !== -1 ? data.students[idx].learningGoals : ''))),
+    monthlySessions: targetMonthly !== undefined ? targetMonthly : (updatedStudent?.monthlySessions || (idx !== -1 ? (data.students[idx].monthlySessions || 12) : 12)),
     id
   };
 

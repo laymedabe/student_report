@@ -295,6 +295,44 @@
       ],
       "reports": [],
       "works": []
+    },
+    {
+      "monthlySessions": 10,
+      "subjects": [
+        "General Tutoring"
+      ],
+      "pinCode": "",
+      "accessCode": "",
+      "id": "stu-1792293393936"
+    },
+    {
+      "id": "stu-1792295021903",
+      "pin_code": "2915",
+      "access_code": "2915",
+      "full_name": "rgehjgwr",
+      "preferred_name": "wrf4F",
+      "grade": "5th Grade",
+      "subjects": [
+        "General Tutoring"
+      ],
+      "parent_name": "rgrg",
+      "parent_phone": "+639072342324",
+      "parent_email": "lemmueldave.danosos@wvsu.edu.ph",
+      "enrolled_date": "2026-10-18",
+      "status": "Active",
+      "learning_goals": "Develop strong study habits and subject mastery.<!--quota:11-->",
+      "created_at": "2026-10-18T03:43:42.542344+00:00",
+      "teacher_id": "teacher-1791793483112",
+      "pinCode": "",
+      "accessCode": "",
+      "fullName": "rgehjgwr",
+      "preferredName": "wrf4F",
+      "parentName": "rgrg",
+      "parentPhone": "+639072342324",
+      "parentEmail": "lemmueldave.danosos@wvsu.edu.ph",
+      "enrolledDate": "2026-10-18",
+      "learningGoals": "Develop strong study habits and subject mastery.",
+      "monthlySessions": 11
     }
   ],
   "announcements": [

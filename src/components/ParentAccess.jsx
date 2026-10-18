@@ -99,10 +99,7 @@ export default function ParentAccess({ onAccessSubmit, centerInfo, errorMsg }) {
                 value={pin}
                 maxLength={8}
                 onChange={(e) => setPin(e.target.value.toUpperCase())}
-                className="pin-input-field"
-                style={{
-                  borderColor: errorMsg ? '#ef4444' : undefined
-                }}
+                className={`pin-input-field ${errorMsg ? 'error' : ''}`}
                 autoFocus
                 aria-label="Student 4-digit PIN code"
               />
@@ -157,16 +154,16 @@ export default function ParentAccess({ onAccessSubmit, centerInfo, errorMsg }) {
 
           {/* Value Props */}
           <div className="parent-access-props">
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-              <CheckCircle size={20} color="#10b981" />
+            <div className="parent-access-prop-item">
+              <CheckCircle size={17} color="#10b981" />
               <span>Instant PIN Access</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-              <FileText size={20} color="#4f46e5" />
+            <div className="parent-access-prop-item">
+              <FileText size={17} color="#4f46e5" />
               <span>Official Reports</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-              <ShieldCheck size={20} color="#0d9488" />
+            <div className="parent-access-prop-item">
+              <ShieldCheck size={17} color="#0d9488" />
               <span>Secure & Private</span>
             </div>
           </div>
