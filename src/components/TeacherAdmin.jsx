@@ -234,27 +234,54 @@ export default function TeacherAdmin({
     onShowToast({ type: 'info', message: 'Logged out of Teacher Mode' });
   };
 
-  const handleRegisterPhotoFileChange = (e) => {
+// Compress and optimize image to crisp, lightweight base64 Data URL (runs directly in browser)
+const compressImageFile = (file, maxSize = 300, quality = 0.85) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+};
+
+  const handleRegisterPhotoFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
       onShowToast({ type: 'error', message: 'Photo must be under 10MB' });
       return;
     }
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      setRegAvatar(event.target.result);
-      try {
-        const formData = new FormData();
-        formData.append('photo', file);
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success && data.url) {
-          setRegAvatar(data.url);
-        }
-      } catch (_) { }
-    };
-    reader.readAsDataURL(file);
+    const dataUrl = await compressImageFile(file, 300, 0.85);
+    if (dataUrl) {
+      setRegAvatar(dataUrl);
+      onShowToast({ type: 'success', message: 'Photo applied!' });
+    }
+    e.target.value = '';
   };
 
   // Copy Parent Link with PIN code
@@ -627,7 +654,7 @@ export default function TeacherAdmin({
   };
 
   // Handle Teacher Photo File Upload from Device
-  const handleTeacherPhotoFileChange = (e) => {
+  const handleTeacherPhotoFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -636,27 +663,16 @@ export default function TeacherAdmin({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const dataUrl = event.target.result;
+    const dataUrl = await compressImageFile(file, 300, 0.85);
+    if (dataUrl) {
       setCenterForm(prev => ({ ...prev, avatar: dataUrl }));
-      onShowToast({ type: 'success', message: 'Photo loaded from device! Click "Save Center Information" to save.' });
-
-      try {
-        const formData = new FormData();
-        formData.append('photo', file);
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success && data.url) {
-          setCenterForm(prev => ({ ...prev, avatar: data.url }));
-        }
-      } catch (_) { }
-    };
-    reader.readAsDataURL(file);
+      onShowToast({ type: 'success', message: 'Teacher photo applied! Click "Save Center Information" to save.' });
+    }
+    e.target.value = '';
   };
 
   // Handle Student Photo File Upload from Device
-  const handleStudentPhotoFileChange = (e) => {
+  const handleStudentPhotoFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -665,23 +681,12 @@ export default function TeacherAdmin({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const dataUrl = event.target.result;
+    const dataUrl = await compressImageFile(file, 300, 0.85);
+    if (dataUrl) {
       setNewStudent(prev => ({ ...prev, avatar: dataUrl }));
-      onShowToast({ type: 'success', message: 'Student photo loaded!' });
-
-      try {
-        const formData = new FormData();
-        formData.append('photo', file);
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success && data.url) {
-          setNewStudent(prev => ({ ...prev, avatar: data.url }));
-        }
-      } catch (_) { }
-    };
-    reader.readAsDataURL(file);
+      onShowToast({ type: 'success', message: 'Student photo applied!' });
+    }
+    e.target.value = '';
   };
 
   // Update Center & Teacher Profile Settings

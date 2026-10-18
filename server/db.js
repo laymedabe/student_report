@@ -24,24 +24,11 @@ try {
 } catch (_) { }
 
 export function saveBase64Avatar(avatarString) {
-  if (!avatarString || typeof avatarString !== 'string' || !avatarString.startsWith('data:image')) {
+  if (!avatarString || typeof avatarString !== 'string') {
     return avatarString;
   }
-  try {
-    const matches = avatarString.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
-    if (!matches) return avatarString;
-    const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-    const buffer = Buffer.from(matches[2], 'base64');
-    const filename = `avatar-${Date.now()}-${Math.round(Math.random() * 1e6)}.${ext}`;
-    if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-    fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
-    return `/uploads/${filename}`;
-  } catch (err) {
-    console.warn('Notice: Base64 avatar disk save skipped:', err.message);
-    return avatarString.length > 500000
-      ? 'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=200&auto=format&fit=crop&q=80'
-      : avatarString;
-  }
+  // Store base64 data URLs directly in the database row for 100% cloud & serverless compatibility
+  return avatarString;
 }
 
 // Supabase environment variables
@@ -619,21 +606,6 @@ export async function getAllStudents(teacherId) {
             }))
           };
         });
-
-        // Merge any local students that aren't yet in Supabase
-        const remoteIds = new Set(mapped.map(s => s.id));
-        const remotePins = new Set(mapped.map(s => s.pinCode));
-        for (const localStu of (localData.students || [])) {
-          if (!remoteIds.has(localStu.id) && !remotePins.has(localStu.pinCode)) {
-            mapped.push({
-              ...localStu,
-              monthlySessions: localStu.monthlySessions !== undefined ? Number(localStu.monthlySessions) : 12,
-              teacherId: localStu.teacherId || 'teacher-1',
-              sessions: localStu.sessions || [],
-              reports: localStu.reports || []
-            });
-          }
-        }
 
         if (teacherId) {
           return mapped.filter(s => s.teacherId === teacherId);

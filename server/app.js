@@ -107,13 +107,17 @@ app.put('/api/center', async (req, res) => {
   }
 });
 
-// File upload endpoint for photos
+// File upload endpoint for photos (returns self-contained data URL for 100% serverless/cloud compatibility)
 app.post('/api/upload', upload.single('photo'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file received' });
     }
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const mime = req.file.mimetype || 'image/jpeg';
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const base64 = fileBuffer.toString('base64');
+    const fileUrl = `data:${mime};base64,${base64}`;
+    try { fs.unlinkSync(req.file.path); } catch (_) { }
     res.json({ success: true, url: fileUrl });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
