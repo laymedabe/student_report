@@ -288,7 +288,7 @@ export default function TeacherAdmin({
   // Copy Parent Link with PIN code
   const handleCopyLink = (student) => {
     const pin = student.pinCode || student.accessCode;
-    const url = `${window.location.origin}${window.location.pathname}?pin=${pin}`;
+    const url = `${window.location.origin}${window.location.pathname}?pin=${pin}&parent=1`;
     navigator.clipboard.writeText(url).then(() => {
       onShowToast({
         type: 'success',
@@ -2795,7 +2795,7 @@ export default function TeacherAdmin({
             }}>
               Hello {shareStudent.parentName || 'Parent'}, here is {shareStudent.fullName}'s tutoring progress report and session logs from {center?.name || 'Sample'}:
               <br /><br />
-              👉 <strong>{`${window.location.origin}${window.location.pathname}?pin=${shareStudent.pinCode || shareStudent.accessCode}`}</strong>
+              👉 <strong>{`${window.location.origin}${window.location.pathname}?pin=${shareStudent.pinCode || shareStudent.accessCode}&parent=1`}</strong>
               <br /><br />
               (Student Access PIN: <strong>{shareStudent.pinCode || shareStudent.accessCode}</strong>)
               <br /><br />
@@ -2808,7 +2808,7 @@ export default function TeacherAdmin({
                 className="btn btn-secondary"
                 onClick={() => {
                   const pin = shareStudent.pinCode || shareStudent.accessCode;
-                  const url = `${window.location.origin}${window.location.pathname}?pin=${pin}`;
+                  const url = `${window.location.origin}${window.location.pathname}?pin=${pin}&parent=1`;
                   navigator.clipboard.writeText(url);
                   onShowToast({ type: 'success', message: 'Direct PIN link copied to clipboard!' });
                 }}
@@ -2819,7 +2819,7 @@ export default function TeacherAdmin({
                 className="btn btn-primary"
                 onClick={() => {
                   const pin = shareStudent.pinCode || shareStudent.accessCode;
-                  const msg = `Hello ${shareStudent.parentName || 'Parent'}, here is ${shareStudent.fullName}'s tutoring progress report from ${center?.name || 'Sample'}: ${window.location.origin}${window.location.pathname}?pin=${pin} (Student Access PIN: ${pin})`;
+                  const msg = `Hello ${shareStudent.parentName || 'Parent'}, here is ${shareStudent.fullName}'s tutoring progress report from ${center?.name || 'Sample'}: ${window.location.origin}${window.location.pathname}?pin=${pin}&parent=1 (Student Access PIN: ${pin})`;
                   navigator.clipboard.writeText(msg);
                   onShowToast({ type: 'success', message: 'Share message copied to clipboard!' });
                   setShowShareModal(false);

@@ -15,6 +15,14 @@ export default function App() {
   const [announcements, setAnnouncements] = useState([]);
 
   // Parent portal state (Student PIN Code)
+  // Detect if user opened a parent share link (?pin=... or ?parent=1)
+  const [isParentLink] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.has('pin') || params.has('code') || params.get('parent') === '1' || params.get('view') === 'parent';
+  });
+
+  const [isTeacherPreview, setIsTeacherPreview] = useState(false);
+
   // Always require PIN entry on page load (no auto-login on refresh)
   const [parentCode, setParentCode] = useState('');
 
@@ -143,24 +151,35 @@ export default function App() {
     setParentCode('');
     setActiveStudent(null);
     setAccessError('');
+    setIsTeacherPreview(false);
     localStorage.removeItem('apex_student_pin');
     localStorage.removeItem('apex_parent_code');
     const url = new URL(window.location.href);
     url.searchParams.delete('pin');
     url.searchParams.delete('code');
+    url.searchParams.delete('parent');
     window.history.replaceState({}, '', url.pathname);
   };
 
-  // View as parent from teacher admin
+  // View as parent from teacher admin (teacher preview mode)
   const handleViewAsParent = (code) => {
+    setIsTeacherPreview(true);
     setMode('parent');
     setParentCode(code);
     fetchStudentByCode(code);
   };
 
+  // Return back to teacher admin from preview
+  const handleExitPreview = () => {
+    setIsTeacherPreview(false);
+    setMode('teacher');
+    setActiveStudent(null);
+  };
+
   // Switch mode
   const handleSwitchMode = (newMode) => {
     setMode(newMode);
+    setIsTeacherPreview(false);
     if (newMode === 'teacher') {
       fetchAllStudents(currentTeacher?.id);
     }
@@ -175,6 +194,9 @@ export default function App() {
     }
   };
 
+  // Show teacher switch ONLY when in parent mode on public initial page (no student loaded, not a parent share link)
+  const shouldShowTeacherSwitch = mode === 'parent' && !activeStudent && !isParentLink;
+
   return (
     <div className="app-container">
       {/* Top Navbar */}
@@ -183,6 +205,9 @@ export default function App() {
         onSwitchMode={handleSwitchMode}
         centerName={center?.name}
         onGoHome={handleBackToAccess}
+        showTeacherSwitch={shouldShowTeacherSwitch}
+        isTeacherPreview={isTeacherPreview}
+        onExitPreview={handleExitPreview}
       />
 
       {/* Main Content Area */}
@@ -202,6 +227,8 @@ export default function App() {
               centerInfo={center}
               errorMsg={accessError}
               initialPin={prefillPin}
+              isParentLink={isParentLink}
+              onTeacherClick={() => handleSwitchMode('teacher')}
             />
           )
         ) : (

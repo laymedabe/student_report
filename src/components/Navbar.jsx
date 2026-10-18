@@ -1,11 +1,14 @@
 import React from 'react';
-import { GraduationCap, ShieldCheck, UserCheck, ArrowRight, Home } from 'lucide-react';
+import { GraduationCap, ShieldCheck, UserCheck, ArrowLeft } from 'lucide-react';
 
 export default function Navbar({ 
   currentMode, 
   onSwitchMode, 
   centerName, 
-  onGoHome 
+  onGoHome,
+  showTeacherSwitch = false,
+  isTeacherPreview = false,
+  onExitPreview
 }) {
   return (
     <header className="top-nav no-print">
@@ -31,17 +34,23 @@ export default function Navbar({
 
         {/* Mode switch */}
         <div className="nav-actions">
-          {currentMode === 'parent' ? (
+          {isTeacherPreview ? (
             <button 
               className="btn btn-secondary nav-mode-btn"
-              onClick={() => onSwitchMode('teacher')}
-              aria-label="Switch to Teacher Admin Mode"
+              onClick={onExitPreview}
+              style={{
+                borderColor: '#c7d2fe',
+                background: '#eef2ff',
+                color: 'var(--primary)',
+                fontWeight: 700
+              }}
+              aria-label="Return to Teacher Admin Mode"
             >
-              <ShieldCheck size={16} color="var(--primary)" />
-              <span className="nav-btn-text-full">Teacher Admin</span>
-              <span className="nav-btn-text-mobile">Teacher</span>
+              <ArrowLeft size={16} />
+              <span className="nav-btn-text-full">Return to Teacher Admin</span>
+              <span className="nav-btn-text-mobile">Admin</span>
             </button>
-          ) : (
+          ) : currentMode === 'teacher' ? (
             <button 
               className="btn btn-primary nav-mode-btn"
               onClick={() => onSwitchMode('parent')}
@@ -51,7 +60,17 @@ export default function Navbar({
               <span className="nav-btn-text-full">Parent Portal View</span>
               <span className="nav-btn-text-mobile">Parent View</span>
             </button>
-          )}
+          ) : showTeacherSwitch ? (
+            <button 
+              className="btn btn-secondary nav-mode-btn"
+              onClick={() => onSwitchMode('teacher')}
+              aria-label="Switch to Teacher Admin Mode"
+            >
+              <ShieldCheck size={16} color="var(--primary)" />
+              <span className="nav-btn-text-full">Teacher Admin</span>
+              <span className="nav-btn-text-mobile">Teacher</span>
+            </button>
+          ) : null}
         </div>
       </div>
     </header>

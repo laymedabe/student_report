@@ -7,7 +7,14 @@ import {
   KeyRound
 } from 'lucide-react';
 
-export default function ParentAccess({ onAccessSubmit, centerInfo, errorMsg, initialPin = '' }) {
+export default function ParentAccess({ 
+  onAccessSubmit, 
+  centerInfo, 
+  errorMsg, 
+  initialPin = '',
+  isParentLink = false,
+  onTeacherClick
+}) {
   const [pin, setPin] = useState(initialPin);
   const [loading, setLoading] = useState(false);
 
@@ -176,7 +183,19 @@ export default function ParentAccess({ onAccessSubmit, centerInfo, errorMsg, ini
         color: 'var(--text-muted)',
         padding: '1.25rem 0'
       }}>
-        {centerInfo?.name || 'Apex Scholars'} • {centerInfo?.activeTerm || 'Academic Year 2026'}
+        <div>{centerInfo?.name || 'Apex Scholars'} • {centerInfo?.activeTerm || 'Academic Year 2026'}</div>
+        {!isParentLink && onTeacherClick && (
+          <div style={{ marginTop: '0.65rem' }}>
+            <button
+              type="button"
+              onClick={onTeacherClick}
+              className="btn btn-ghost btn-sm"
+              style={{ color: 'var(--text-muted)', fontSize: '0.8rem', padding: '0.2rem 0.5rem', opacity: 0.75 }}
+            >
+              🔒 Teacher & Staff Portal
+            </button>
+          </div>
+        )}
       </footer>
     </div>
   );

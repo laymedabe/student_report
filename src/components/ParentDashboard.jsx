@@ -39,7 +39,7 @@ export default function ParentDashboard({
   // Copy portal link to clipboard (with PIN code!)
   const handleCopyLink = () => {
     const studentPin = student.pinCode || student.accessCode;
-    const url = `${window.location.origin}${window.location.pathname}?pin=${studentPin}`;
+    const url = `${window.location.origin}${window.location.pathname}?pin=${studentPin}&parent=1`;
     navigator.clipboard.writeText(url).then(() => {
       if (onShowToast) {
         onShowToast({
