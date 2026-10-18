@@ -322,6 +322,51 @@ export async function verifyTeacherPasscode(inputPasscode) {
   return { valid: result.valid, tutorName: result.teacher?.name || 'Teacher' };
 }
 
+export async function getCenterInfo() {
+  const localData = loadLocalData();
+
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from('centers')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        const { passcode, ...publicInfo } = data;
+        return {
+          id: data.id || 'center-1',
+          name: data.name || localData.center?.name || 'skwelahan ni kleeser',
+          tagline: data.tagline || localData.center?.tagline || 'Empowering Minds, Inspiring Lifelong Academic Confidence',
+          tutorName: data.tutor_name || localData.center?.tutorName || 'Sir Kleeser',
+          tutorTitle: data.tutor_title || localData.center?.tutorTitle || 'Lead Academic Coach',
+          phone: data.phone || localData.center?.phone || '',
+          email: data.email || localData.center?.email || 'sample@email.com',
+          address: data.address || localData.center?.address || 'Sambag jaro',
+          activeTerm: data.active_term || localData.center?.activeTerm || '2026 Term',
+          avatar: localData.center?.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'
+        };
+      }
+    } catch (_) { }
+  }
+
+  const center = localData.center || {};
+  const { passcode, ...publicInfo } = center;
+  return {
+    id: center.id || 'center-1',
+    name: center.name || 'skwelahan ni kleeser',
+    tagline: center.tagline || 'Empowering Minds, Inspiring Lifelong Academic Confidence',
+    tutorName: center.tutorName || 'Sir Kleeser',
+    tutorTitle: center.tutorTitle || 'Lead Academic Coach',
+    phone: center.phone || '',
+    email: center.email || 'sample@email.com',
+    address: center.address || 'Sambag jaro',
+    activeTerm: center.activeTerm || '2026 Term',
+    avatar: center.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80'
+  };
+}
+
 export async function updateCenterInfo(updateData) {
   // Always synchronize to local storage
   const localData = loadLocalData();
