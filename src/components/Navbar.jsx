@@ -6,7 +6,6 @@ export default function Navbar({
   onSwitchMode, 
   centerName, 
   onGoHome,
-  showTeacherSwitch = false,
   isTeacherPreview = false,
   onExitPreview
 }) {
@@ -59,16 +58,6 @@ export default function Navbar({
               <UserCheck size={16} />
               <span className="nav-btn-text-full">Parent Portal View</span>
               <span className="nav-btn-text-mobile">Parent View</span>
-            </button>
-          ) : showTeacherSwitch ? (
-            <button 
-              className="btn btn-secondary nav-mode-btn"
-              onClick={() => onSwitchMode('teacher')}
-              aria-label="Switch to Teacher Admin Mode"
-            >
-              <ShieldCheck size={16} color="var(--primary)" />
-              <span className="nav-btn-text-full">Teacher Admin</span>
-              <span className="nav-btn-text-mobile">Teacher</span>
             </button>
           ) : null}
         </div>

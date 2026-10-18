@@ -15,10 +15,14 @@ export default function App() {
   const [announcements, setAnnouncements] = useState([]);
 
   // Parent portal state (Student PIN Code)
-  // Detect if user opened a parent share link (?pin=... or ?parent=1)
+  // Detect if user opened a parent share link (?pin=... or ?parent=1) and persist across refresh
   const [isParentLink] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.has('pin') || params.has('code') || params.get('parent') === '1' || params.get('view') === 'parent';
+    const hasParentParam = params.has('pin') || params.has('code') || params.get('parent') === '1' || params.get('view') === 'parent';
+    if (hasParentParam) {
+      sessionStorage.setItem('apex_role', 'parent');
+    }
+    return hasParentParam || sessionStorage.getItem('apex_role') === 'parent';
   });
 
   const [isTeacherPreview, setIsTeacherPreview] = useState(false);
@@ -194,8 +198,20 @@ export default function App() {
     }
   };
 
-  // Show teacher switch ONLY when in parent mode on public initial page (no student loaded, not a parent share link)
-  const shouldShowTeacherSwitch = mode === 'parent' && !activeStudent && !isParentLink;
+  // Handle direct teacher admin route via URL (#admin, #teacher, ?admin=1)
+  useEffect(() => {
+    const checkAdminRoute = () => {
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash;
+      if (params.get('admin') === '1' || params.get('teacher') === '1' || hash === '#admin' || hash === '#teacher') {
+        sessionStorage.removeItem('apex_role');
+        setMode('teacher');
+      }
+    };
+    checkAdminRoute();
+    window.addEventListener('hashchange', checkAdminRoute);
+    return () => window.removeEventListener('hashchange', checkAdminRoute);
+  }, []);
 
   return (
     <div className="app-container">
@@ -205,7 +221,6 @@ export default function App() {
         onSwitchMode={handleSwitchMode}
         centerName={center?.name}
         onGoHome={handleBackToAccess}
-        showTeacherSwitch={shouldShowTeacherSwitch}
         isTeacherPreview={isTeacherPreview}
         onExitPreview={handleExitPreview}
       />
