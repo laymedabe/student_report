@@ -23,9 +23,9 @@ export default function Navbar({
             alt="Logic Lane Learning Center"
             className="navbar-logo-img"
             style={{
-              height: '46px',
+              height: '60px',
               width: 'auto',
-              maxHeight: '46px',
+              maxHeight: '60px',
               objectFit: 'contain'
             }}
           />
@@ -34,7 +34,7 @@ export default function Navbar({
               {centerName || 'Logic Lane Learning Center'}
             </div>
             <div className="brand-subtitle" style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.04em' }}>
-              Learning Center • Excellentia Valores Competentia
+              Excellentia Valores Competentia
             </div>
           </div>
         </div>
