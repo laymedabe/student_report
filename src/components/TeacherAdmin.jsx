@@ -1497,7 +1497,7 @@ export default function TeacherAdmin({
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <span className={`badge ${activeMonthStats.isFinished ? 'badge-emerald' : 'badge-indigo'}`} style={{ fontWeight: 800, fontSize: '0.825rem' }}>
-                        {activeMonthStats.monthName} Package: {activeMonthStats.quota} Sessions / Month
+                        {activeMonthStats.monthName}: {activeMonthStats.quota} Sessions / Month
                       </span>
                       <strong style={{ fontSize: '0.95rem', color: activeMonthStats.isFinished ? '#15803d' : 'var(--primary)' }}>
                         {activeMonthStats.isFinished
@@ -2506,9 +2506,9 @@ export default function TeacherAdmin({
           <div className="modal-content" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Update Monthly Package</h3>
+                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Update Monthly Sessions</h3>
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  Set monthly sessions quota for {activeStudent.fullName}
+                  Set monthly sessions for {activeStudent.fullName}
                 </span>
               </div>
               <button className="btn btn-ghost" onClick={() => setShowQuotaModal(false)}>✕</button>

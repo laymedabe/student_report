@@ -196,7 +196,7 @@ export default function ParentDashboard({
             </div>
           </div>
 
-          {/* Monthly Sessions Package Countdown Widget */}
+          {/* Monthly Sessions Countdown Widget */}
           <div style={{
             background: 'rgba(255, 255, 255, 0.12)',
             backdropFilter: 'blur(8px)',
@@ -214,7 +214,7 @@ export default function ParentDashboard({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
               <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e0e7ff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <Calendar size={15} color="#fbbf24" />
-                {monthName} Package
+                {monthName} Sessions
               </span>
               <span style={{
                 fontSize: '0.75rem',
@@ -496,7 +496,7 @@ export default function ParentDashboard({
           ======================================================== */}
       {activeTab === 'sessions' && (
         <div>
-          {/* Monthly Package Allowance Status Banner */}
+          {/* Monthly Sessions Allowance Status Banner */}
           <div style={{
             background: 'linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)',
             border: '1px solid #c7d2fe',
@@ -525,7 +525,7 @@ export default function ParentDashboard({
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)' }}>
-                  {monthName} Sessions Package: {remainingThisMonth} of {monthlyQuota} Remaining
+                  {monthName} Sessions: {remainingThisMonth} of {monthlyQuota} Remaining
                 </div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                   {completedThisMonth} session{completedThisMonth === 1 ? '' : 's'} completed this month • {isMonthFinished ? 'Monthly goal achieved! 🎉' : `${remainingThisMonth} remaining to complete`}
