@@ -1215,6 +1215,23 @@ export default function TeacherAdmin({
     return { quota, completedThisMonth, remaining, isFinished, percent, monthName, curYear };
   };
 
+  // Helper for dynamic attendance badge styling
+  const getAttendanceBadgeClass = (attendance) => {
+    switch (attendance) {
+      case 'Present':
+        return 'badge badge-emerald';
+      case 'Late':
+        return 'badge badge-amber';
+      case 'Absent':
+        return 'badge badge-rose';
+      case 'Excused':
+      case 'Excused Absence':
+        return 'badge badge-indigo';
+      default:
+        return 'badge badge-emerald';
+    }
+  };
+
   // -------------------------------------------------------------
   // VIEW: AUTHENTICATED TEACHER ADMIN WORKSPACE
   // -------------------------------------------------------------
@@ -1722,7 +1739,7 @@ export default function TeacherAdmin({
                       <div className="session-topic-title">{ses.topic}</div>
                       <div className="session-meta-row">
                         <span className="badge badge-indigo">{ses.subject}</span>
-                        <span className="badge badge-emerald">{ses.attendance}</span>
+                        <span className={getAttendanceBadgeClass(ses.attendance)}>{ses.attendance}</span>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{ses.date}</span>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>• {ses.duration}</span>
                       </div>
@@ -2480,8 +2497,9 @@ export default function TeacherAdmin({
                     onChange={(e) => setNewSession({ ...newSession, attendance: e.target.value })}
                   >
                     <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
                     <option value="Late">Late</option>
-                    <option value="Excused">Excused Absence</option>
+                    <option value="Excused Absence">Excused Absence</option>
                   </select>
                 </div>
                 <div className="form-group">

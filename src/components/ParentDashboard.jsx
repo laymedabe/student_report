@@ -67,9 +67,28 @@ export default function ParentDashboard({
   const latestSession = student.sessions && student.sessions.length > 0 ? student.sessions[0] : null;
   const latestReport = student.reports && student.reports.length > 0 ? student.reports[0] : null;
 
-  // Calculate attendance rate
+  // Helper for dynamic attendance badge styling
+  const getAttendanceBadgeClass = (attendance) => {
+    switch (attendance) {
+      case 'Present':
+        return 'badge badge-emerald';
+      case 'Late':
+        return 'badge badge-amber';
+      case 'Absent':
+        return 'badge badge-rose';
+      case 'Excused':
+      case 'Excused Absence':
+        return 'badge badge-indigo';
+      default:
+        return 'badge badge-emerald';
+    }
+  };
+
+  // Calculate attendance rate (Present and Late count as attended, Absent counts as absence)
   const totalSessions = (student.sessions || []).length;
-  const presentCount = (student.sessions || []).filter(s => s.attendance === 'Present').length;
+  const presentCount = (student.sessions || []).filter(
+    s => s.attendance === 'Present' || s.attendance === 'Late'
+  ).length;
   const attendanceRate = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 100;
 
   // Monthly Sessions Allowance & Automatic Countdown
@@ -422,7 +441,20 @@ export default function ParentDashboard({
                 </div>
                 <div className="footer-item">
                   <span className="footer-item-label">Attendance</span>
-                  <span className="footer-item-val" style={{ color: '#059669' }}>
+                  <span
+                    className="footer-item-val"
+                    style={{
+                      color:
+                        latestSession.attendance === 'Absent'
+                          ? '#e11d48'
+                          : latestSession.attendance === 'Late'
+                          ? '#d97706'
+                          : latestSession.attendance === 'Excused' || latestSession.attendance === 'Excused Absence'
+                          ? '#4f46e5'
+                          : '#059669',
+                      fontWeight: 700
+                    }}
+                  >
                     {latestSession.attendance}
                   </span>
                 </div>
@@ -604,7 +636,7 @@ export default function ParentDashboard({
                         <div className="session-topic-title">{session.topic}</div>
                         <div className="session-meta-row">
                           <span className="badge badge-indigo">{session.subject}</span>
-                          <span className="badge badge-emerald">{session.attendance}</span>
+                          <span className={getAttendanceBadgeClass(session.attendance)}>{session.attendance}</span>
                           {session.badge && (
                             <span className="badge badge-amber">
                               <Award size={12} />

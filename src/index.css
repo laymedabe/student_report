@@ -1146,10 +1146,19 @@ a {
   display: none;
 }
 
+/* Report Tab Screen & Print Visibility */
+.report-tab-wrapper.is-hidden-screen {
+  display: none;
+}
+
 /* ============================================================
    PRINT RULES
    ============================================================ */
 @media print {
+  .report-tab-wrapper.is-hidden-screen {
+    display: block !important;
+  }
+
   body {
     background: white !important;
     color: black !important;
